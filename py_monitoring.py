@@ -8,8 +8,7 @@ import socket
 import struct
 import getopt
 
-import average
-import framefilter
+import FrameFilter from framefilter
 
 MY_ADDRESS = '0e:0a:79:72:f1:32' # SHOULD be got from system call
 
@@ -95,8 +94,7 @@ if __name__=='__main__':
         print 'usage: monitoring_py.py -i <interface> [-s <src_address> -d <dst_address> -t <SNR_theshold> ]'
         sys.exit(0)
 
-    a = average.WeightedAverage(100, 40)
-    f = FrameFilter(a, MY_ADDRESS, src_addr, dst_addr)
+    f = FrameFilter(MY_ADDRESS, src_addr, dst_addr)
     p = pcap.pcapObject()
 
     #dev = pcap.lookupdev()

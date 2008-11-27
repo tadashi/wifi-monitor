@@ -8,7 +8,7 @@ import socket
 import struct
 import getopt
 
-import average
+import WeightedAverge from average
 
 ##
 # RX frame                               TX frame                             
@@ -174,7 +174,7 @@ class FrameFilter(object):
     def get_src_addr(self, bytes):
         tmp_addr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
         if not self.addr_snr.has_key(tmp_addr):
-            self.addr_snr[tmp_addr] = average.WeightedAverage(100, 0)
+            self.addr_snr[tmp_addr] = WeightedAverage(100, 0)
             print "received addresses with snr: ", self.ff.addr_snr
 
         return tmp_addr
