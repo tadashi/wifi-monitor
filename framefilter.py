@@ -154,7 +154,7 @@ class FrameFilter(object):
 
     def filter_bitrate(self, bytes, key):
         tmp_rate = string.atoi(bytes[key[DATARATE]], 16) / 2.0
-        print tmp_rate, string.atoi(bytes[key[DATARATE]], 16)
+        #print tmp_rate, string.atoi(bytes[key[DATARATE]], 16)
         if tmp_rate not in DATARATE_11g:
             print "DATARATE is UNKNOW"
             return 0
@@ -170,7 +170,7 @@ class FrameFilter(object):
             return 1
 
         else:
-            print "FILTERD by SNR"
+            #print "FILTERD by SNR"
             return 0
 
         return 1
@@ -187,18 +187,20 @@ class FrameFilter(object):
         return tmp_addr
 
     def filter_retry_count(self, bytes, key):
-        print "addr_snr", self.addr_snr
+        #print "addr_snr", self.addr_snr
         tmp_addr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
+        #print bytes[key[RETRY_FLAG]], int(bytes[key[RETRY_FLAG]], 16)
 
-        if bytes[key[RETRY_FLAG]] & 0x08 == 8:
-            get_retry_count(tmp_addr)
+        if int(bytes[key[RETRY_FLAG]], 16) & 0x08 == 8:
+            self.push_retry_count(tmp_addr)
+            return 1
 
         else:
-            print "FRAME is not retransmitted"
+            #print "FRAME is not retransmitted"
             return 0
 
 
-    def get_retry_count(self, addr):
+    def push_retry_count(self, addr):
         if not self.addr_retry.has_key(tmp_addr): # First time
             self.addr_retry[tmp_addr] = 0
             return self.addr_retry[tmp_addr] # 0
@@ -211,28 +213,28 @@ class FrameFilter(object):
         #print self.rate
         #print self.rx_frame
 
-        if not (self.rx_frame % 100):
-            print "%s monitoring RX frame" % int
+        if not (self.rx_frame % 1000):
+            print "%s: monitoring RX frame" % int
             #print self.addr_snr
             for saddr in self.addr_snr:
                 #print self.addr_snr[saddr].emavalues
                 #print self.addr_snr[saddr].values
-                print "      exponential moving average SNR           : %f" % self.addr_snr[saddr].emavalue(0.8)
+                print "      exponential moving average SNR  : %f" % self.addr_snr[saddr].emavalue(0.8)
 
     def print_tx_filter(self, int):
         #print self.rate
         #print self.rx_frame
 
-        if not (self.rx_frame % 100):
-            print "%s monitoring TX frame" % int
-            print self.addr_snr
+        if not (self.rx_frame % 1000):
+            print "%s: monitoring TX frame" % int
+            #print self.addr_snr
 
-            for saddr in self.addr_snr:
+            for saddr in self.addr_retry:
                 print "      retransmission count  : %i" % self.addr_retry[saddr]
             
-                print "      8 available bit-rates :"
-                for rate in DATARATE_11a:
-                    print "            %f Mb/s : %i" % (rate, self.rate.count(rate))
+            print "      8 available bit-rates"
+            for rate in DATARATE_11a:
+                print "            %.1f Mb/s  : %i" % (rate, self.rate.count(rate))
 
 
     def filter_rx(self, raw):
@@ -258,20 +260,17 @@ class FrameFilter(object):
         bytes = self.dump_hex(raw)
         
         if self.filter_data(bytes, TX):
-            print "XXXXX"
             if self.ft[SRC]:
-                print "YYYYY"
                 if not self.filter_src_addr(bytes, self.maddr, TX):
                     return 0
                 
             if self.ft[DST]:
-                print "ZZZZZ"
                 if not self.filter_dst_addr(bytes, self.rx_addr, TX):
                     return 0
 
             if self.filter_bitrate(bytes, TX):
-                print "CCCCCC"
-                get_retry_count(bytes, TX)
+                if self.filter_retry_count(bytes, TX):
+                    pass
 
             return 1
 

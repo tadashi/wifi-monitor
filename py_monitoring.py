@@ -77,6 +77,7 @@ if __name__=='__main__':
         # p.next() returns a (pktlen, data, timestamp) tuple 
             apply(ff.filter, p.next())
             ff.print_rx_filter(dev)
+            ff.print_tx_filter(dev)
 
     except KeyboardInterrupt:
         print '%s' % sys.exc_type
