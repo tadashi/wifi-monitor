@@ -99,22 +99,21 @@ TX = {
 ## External Library : 
 ##--------------------------------------------------------------------------
 class FrameFilter(object):
-    def __init__(self, average, maddr, saddr, daddr):
+    def __init__(self, maddr, saddr, daddr):
         super(FrameFilter, self).__init__()
 
         self.maddr = maddr
         self.saddr = saddr
         self.daddr = daddr
 
-        self.rx_addr = {}
+        self.addr_snr = {}
+        self.addr_retry = {}
 
         self.rx_frame = 0
         self.tx_frame = 0
 
         self.rate = []
         self.rt = 0
-
-        self.snr = average
 
     def set_rules(self, rule):
         """docstring for set_rules"""
@@ -174,18 +173,22 @@ class FrameFilter(object):
 
     def get_src_addr(self, bytes):
         tmp_addr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
-        if not self.ff.rx_addr.has_key(tmp_addr):
-            self.ff.rx_addr[tmp_addr] = 0
-            print "received addresses: ", self.ff.rx_addr
+        if not self.addr_snr.has_key(tmp_addr):
+            self.addr_snr[tmp_addr] = average.WeightedAverage(100, 0)
+            print "received addresses with snr: ", self.ff.addr_snr
 
         return tmp_addr
 
-    def get_retry_count(self, raw, key):
-        if ord(raw[key[RETRY_FLAG]]) & 0x08 == 8:
-            print "FRAME is retransmitted"
-            self.rt += 1
+    def get_retry_count(self, bytes, key):
+        tmp_addr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
+        if bytes[key[RETRY_FLAG]] & 0x08 == 8:
+            if self.addr_snr.has_key(tmp_addr):
+                self.addr_retry[tmp_addr] += 1
+                return self.add_retry[tmp_addr]
 
-        return self.rt
+        else:
+            print "FRAME is retransmitted"
+            return 0
 
     def print_rx_filter(self):
         #print self.rate
