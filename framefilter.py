@@ -8,7 +8,7 @@ import socket
 import struct
 import getopt
 
-import WeightedAverge from average
+from average import WeightedAverge
 
 ##
 # RX frame                               TX frame                             

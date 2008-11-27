@@ -8,7 +8,7 @@ import socket
 import struct
 import getopt
 
-import FrameFilter from framefilter
+from framefilter import FrameFilter
 
 MY_ADDRESS = '0e:0a:79:72:f1:32' # SHOULD be got from system call
 
