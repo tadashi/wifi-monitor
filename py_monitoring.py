@@ -30,63 +30,13 @@ for opt, args in optlist:
        interface = args
    if opt in ("-t", "--threshold"):
        snr_threshold = int(args)
-       FILTER[SNR_FILTER] = True
+       FILTER[SNR] = True
    if opt in ("-s", "--src-addr"):
        src_addr = args
-       FILTER[SRC_FILTER] = True
+       FILTER[SRC] = True
    if opt in ("-d", "--dst-addr"):
        dst_addr = args
-       FILTER[DST_FILTER] = True
-
-protocols = { socket.IPPROTO_TCP:'tcp',
-              socket.IPPROTO_UDP:'udp',
-              socket.IPPROTO_ICMP:'icmp'}
-
-
-def filter_rx(raw, ff, FILTER):
-   """docstring for filter_rx"""
-   ff.rx_frame += 1
-   bytes = ff.dump_hex(raw)
-
-   if ff.filter_data(bytes, RX):
-      if FILTER[DST]:
-         if not ff.filter_dst_addr(bytes, ff.maddr, RX): # When dst address is my address
-            return 0
-         
-      if FILTER[SNR]:
-         if not ff.filter_snr(bytes, RX):
-            return 0
-         
-      return 1
-
-def filter_tx(raw, ff, FILTER):
-   """docstring for filter_tx"""
-   ff.tx_frame += 1
-   bytes = ff.dump_hex(raw)
-        
-   if ff.filter_data(bytes, TX):
-      if FILTER[SRC]:
-         if not ff.filter_src_addr(bytes, ff.maddr, TX):
-            return 0
-
-      if FILTER[DST]:
-         if not ff.filter_dst_addr(bytes, ff.rx_addr, TX):
-            return 0
-
-      if FILTER[SNR]:
-         if ff.filter_snr(bytes, TX):
-            if ff.filter_bitrate(bytes, TX):
-               get_retry_count(bytes, TX)
-
-         else:
-            return 0
-
-
-def filter(pktlen, raw, timestamp):
-   """docstring for filter"""
-
-   filter_tx(raw, ff)
-   filter_rx(raw, ff)
+       FILTER[DST] = True
 
 if __name__=='__main__':
 
@@ -94,7 +44,7 @@ if __name__=='__main__':
         print 'usage: monitoring_py.py -i <interface> [-s <src_address> -d <dst_address> -t <SNR_theshold> ]'
         sys.exit(0)
 
-    f = FrameFilter(MY_ADDRESS, src_addr, dst_addr)
+    ff = FrameFilter(MY_ADDRESS, snr_threshold, FILTER)
     p = pcap.pcapObject()
 
     #dev = pcap.lookupdev()
@@ -125,8 +75,8 @@ if __name__=='__main__':
 
         # as is the next() method
         # p.next() returns a (pktlen, data, timestamp) tuple 
-            apply(f.filter, p.next())
-            f.print_rx_filter()
+            apply(ff.filter, p.next())
+            ff.print_rx_filter(dev)
 
     except KeyboardInterrupt:
         print '%s' % sys.exc_type

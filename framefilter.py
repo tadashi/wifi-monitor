@@ -8,7 +8,12 @@ import socket
 import struct
 import getopt
 
-from average import WeightedAverge
+from average import WeightedAverage
+
+## Necesarry Filters
+SNR = 0
+SRC = 1
+DST = 2
 
 ##
 # RX frame                               TX frame                             
@@ -99,12 +104,13 @@ TX = {
 ## External Library : 
 ##--------------------------------------------------------------------------
 class FrameFilter(object):
-    def __init__(self, maddr, saddr, daddr):
+    def __init__(self, maddr, th, ft):
         super(FrameFilter, self).__init__()
 
+        # Global Values
+        self.ft = ft
+        self.th = th
         self.maddr = maddr
-        self.saddr = saddr
-        self.daddr = daddr
 
         self.addr_snr = {}
         self.addr_retry = {}
@@ -127,7 +133,7 @@ class FrameFilter(object):
             return 1
         
         else:
-            print "FRAME is NOT DATA"
+            #print "FRAME is NOT DATA"
             return 0
 
     def filter_src_addr(self, bytes, saddr, key):
@@ -147,7 +153,8 @@ class FrameFilter(object):
             return 0
 
     def filter_bitrate(self, bytes, key):
-        tmp_rate = string.atof(bytes[key[DATARATE]], 16) / 2.0
+        tmp_rate = string.atoi(bytes[key[DATARATE]], 16) / 2.0
+        print tmp_rate, string.atoi(bytes[key[DATARATE]], 16)
         if tmp_rate not in DATARATE_11g:
             print "DATARATE is UNKNOW"
             return 0
@@ -158,8 +165,8 @@ class FrameFilter(object):
 
     def filter_snr(self, bytes, key):
         tmp_snr = int(string.atoi(bytes[key[SSISIGNAL]], 16))
-        self.push_snr(tmp_snr, self.get_src_addr(bytes))
-        if tmp_snr > snr_threshold:
+        self.push_snr(tmp_snr, self.get_src_addr(bytes, key))
+        if tmp_snr > self.th:
             return 1
 
         else:
@@ -168,37 +175,109 @@ class FrameFilter(object):
 
         return 1
 
-    def push_snr(self, bytes, saddr):
-        self.snr[saddr].emapush(int(string.atoi(bytes[key[SSISIGNAL]], 16)))
+    def push_snr(self, snr, saddr):
+        self.addr_snr[saddr].push(snr)
 
-    def get_src_addr(self, bytes):
+    def get_src_addr(self, bytes, key):
         tmp_addr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
         if not self.addr_snr.has_key(tmp_addr):
             self.addr_snr[tmp_addr] = WeightedAverage(100, 0)
-            print "received addresses with snr: ", self.ff.addr_snr
+            print "received addresses with snr: ", self.addr_snr
 
         return tmp_addr
 
-    def get_retry_count(self, bytes, key):
+    def filter_retry_count(self, bytes, key):
+        print "addr_snr", self.addr_snr
         tmp_addr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
+
         if bytes[key[RETRY_FLAG]] & 0x08 == 8:
-            if self.addr_snr.has_key(tmp_addr):
-                self.addr_retry[tmp_addr] += 1
-                return self.add_retry[tmp_addr]
+            get_retry_count(tmp_addr)
 
         else:
-            print "FRAME is retransmitted"
+            print "FRAME is not retransmitted"
             return 0
 
-    def print_rx_filter(self):
+
+    def get_retry_count(self, addr):
+        if not self.addr_retry.has_key(tmp_addr): # First time
+            self.addr_retry[tmp_addr] = 0
+            return self.addr_retry[tmp_addr] # 0
+
+        else:
+            self.addr_retry[tmp_addr] += 1
+            return self.addr_retry[tmp_addr]
+
+    def print_rx_filter(self, int):
         #print self.rate
         #print self.rx_frame
 
         if not (self.rx_frame % 100):
-            print "%s monitoring" % interface
-            print "      average snr           : %f" % self.snr.emavalue(0.8)
-            print "      retransmission count  : %i" % self.rt
+            print "%s monitoring RX frame" % int
+            #print self.addr_snr
+            for saddr in self.addr_snr:
+                #print self.addr_snr[saddr].emavalues
+                #print self.addr_snr[saddr].values
+                print "      exponential moving average SNR           : %f" % self.addr_snr[saddr].emavalue(0.8)
+
+    def print_tx_filter(self, int):
+        #print self.rate
+        #print self.rx_frame
+
+        if not (self.rx_frame % 100):
+            print "%s monitoring TX frame" % int
+            print self.addr_snr
+
+            for saddr in self.addr_snr:
+                print "      retransmission count  : %i" % self.addr_retry[saddr]
             
-            print "      8 available bit-rates :"
-            for rate in ['6.0', '9.0', '12.0', '18.0', '24.0', '36.0', '48.0', '54.0']: # 11a
-                print "            %s Mb/s : %i" % (rate, self.rate.count(float(rate)))
+                print "      8 available bit-rates :"
+                for rate in DATARATE_11a:
+                    print "            %f Mb/s : %i" % (rate, self.rate.count(rate))
+
+
+    def filter_rx(self, raw):
+        """docstring for filter_rx"""
+        self.rx_frame += 1
+        bytes = self.dump_hex(raw)
+        
+        if self.filter_data(bytes, RX):
+            if self.ft[DST]:
+                if not self.filter_dst_addr(bytes, self.maddr, RX): # When dst address is my address
+                    return 0
+
+            if self.ft[SNR]:
+                if not self.filter_snr(bytes, RX):
+                    return 0
+        
+            return 1
+
+
+    def filter_tx(self, raw):
+        """docstring for filter_tx"""
+        self.tx_frame += 1
+        bytes = self.dump_hex(raw)
+        
+        if self.filter_data(bytes, TX):
+            print "XXXXX"
+            if self.ft[SRC]:
+                print "YYYYY"
+                if not self.filter_src_addr(bytes, self.maddr, TX):
+                    return 0
+                
+            if self.ft[DST]:
+                print "ZZZZZ"
+                if not self.filter_dst_addr(bytes, self.rx_addr, TX):
+                    return 0
+
+            if self.filter_bitrate(bytes, TX):
+                print "CCCCCC"
+                get_retry_count(bytes, TX)
+
+            return 1
+
+
+    def filter(self, pktlen, raw, timestamp):
+        """docstring for filter"""
+
+        self.filter_rx(raw)
+        self.filter_tx(raw)
