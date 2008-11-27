@@ -53,11 +53,11 @@ def filter_rx(raw, ff, FILTER):
       if FILTER[DST]:
          if not ff.filter_dst_addr(bytes, ff.maddr, RX): # When dst address is my address
             return 0
-
+         
       if FILTER[SNR]:
          if not ff.filter_snr(bytes, RX):
             return 0
-
+         
       return 1
 
 def filter_tx(raw, ff, FILTER):
@@ -71,14 +71,16 @@ def filter_tx(raw, ff, FILTER):
             return 0
 
       if FILTER[DST]:
-         if not ff.filter_dst_addr(bytes, daddr, TX):
+         if not ff.filter_dst_addr(bytes, ff.rx_addr, TX):
             return 0
 
-            if ff.filter_bitrate(bytes, TX):
-               ff.get_retry_count(raw, TX)
-
       if FILTER[SNR]:
-         if filter_snr(bytes, TX):
+         if ff.filter_snr(bytes, TX):
+            if ff.filter_bitrate(bytes, TX):
+               get_retry_count(bytes, TX)
+
+         else:
+            return 0
 
 
 def filter(pktlen, raw, timestamp):
