@@ -156,7 +156,7 @@ class FrameFilter(object):
         tmp_rate = string.atoi(bytes[key[DATARATE]], 16) / 2.0
         #print tmp_rate, string.atoi(bytes[key[DATARATE]], 16)
         if tmp_rate not in DATARATE_11g:
-            print "DATARATE is UNKNOW"
+            #print "DATARATE is UNKNOWN"
             return 0
         
         else:
@@ -219,7 +219,7 @@ class FrameFilter(object):
             for saddr in self.addr_snr:
                 #print self.addr_snr[saddr].emavalues
                 #print self.addr_snr[saddr].values
-                print "      exponential moving average SNR  : %f" % self.addr_snr[saddr].emavalue(0.8)
+                print "      EMA SNR[%s]  : %f" % (saddr, self.addr_snr[saddr].emavalue(0.8))
 
     def print_tx_filter(self, int):
         #print self.rate
@@ -229,8 +229,8 @@ class FrameFilter(object):
             print "%s: monitoring TX frame" % int
             #print self.addr_snr
 
-            for saddr in self.addr_retry:
-                print "      retransmission count  : %i" % self.addr_retry[saddr]
+            for daddr in self.addr_retry:
+                print "      rt count[%s]  : %i" % (daddr, self.addr_retry[daddr])
             
             print "      8 available bit-rates"
             for rate in DATARATE_11a:

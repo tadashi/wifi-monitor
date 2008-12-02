@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /Usr/bin/env python
 
 import sys
 import pcap
@@ -9,8 +9,10 @@ import struct
 import getopt
 
 from framefilter import FrameFilter
+from config impoer Configure
 
 MY_ADDRESS = '0e:0a:79:72:f1:32' # SHOULD be got from system call
+snr_threshold = 0 # default
 
 SNR = 0
 SRC = 1
@@ -44,18 +46,18 @@ if __name__=='__main__':
         print 'usage: monitoring_py.py -i <interface> [-s <src_address> -d <dst_address> -t <SNR_theshold> ]'
         sys.exit(0)
 
-    ff = FrameFilter(MY_ADDRESS, snr_threshold, FILTER)
-    p = pcap.pcapObject()
-
-    #dev = pcap.lookupdev()
     dev = interface
+
+    cf = Configure(dev, snr_threshold)
+    cf.get_adrr()
+
+    ff = FrameFilter(cf.ether_addr, cf.thr, FILTER)
+
+    p = pcap.pcapObject()
+    #dev = pcap.lookupdev()
     #net, mask = pcap.lookupnet(dev)
 
-    # note:    to_ms does nothing on linux
     p.open_live(dev, 96, 0, 100)
-    #p.dump_open('dumpfile')
-
-    #p.setfilter(string.join(sys.argv[2:],' '), 0, 0)
     
     # try-except block to catch keyboard interrupt.    Failure to shut
     # down cleanly can result in the interface not being taken out of promisc.
