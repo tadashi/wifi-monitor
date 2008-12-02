@@ -261,17 +261,17 @@ class FrameFilter(object):
         self.tx_frame += 1
         bytes = self.dump_hex(raw)
         
-        if self.filter_data(bytes, TX):
+        if self.filter_data(bytes, RX):
             if self.ft[SRC]: # When packets are send by this node
-                if not self.filter_src_addr(bytes, self.maddr, TX):
+                if not self.filter_src_addr(bytes, self.maddr, RX):
                     return 0
                 
             if self.ft[DST]:
-                if not self.filter_dst_addr(bytes, self.dst_addr, TX):
+                if not self.filter_dst_addr(bytes, self.dst_addr, RX):
                     return 0
 
-            if self.filter_bitrate(bytes, TX):
-                if self.filter_retry_count(bytes, TX):
+            if self.filter_bitrate(bytes, RX):
+                if self.filter_retry_count(bytes, RX):
                     pass
 
             return 1
