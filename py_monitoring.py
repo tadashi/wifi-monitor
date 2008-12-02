@@ -45,7 +45,7 @@ for opt, args in optlist:
 if __name__=='__main__':
 
     if len(sys.argv) < 2:
-        print 'usage: monitoring_py.py -i <interface> [-s <src_address> -d <dst_address> -t <SNR_theshold> ]'
+        print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [-s <src_address> -d <dst_address> ]'
         sys.exit(0)
 
     cf = Configure(adhoc_interface, snr_threshold)

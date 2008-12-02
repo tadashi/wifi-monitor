@@ -201,13 +201,13 @@ class FrameFilter(object):
 
 
     def push_retry_count(self, addr):
-        if not self.addr_retry.has_key(tmp_addr): # First time
-            self.addr_retry[tmp_addr] = 0
-            return self.addr_retry[tmp_addr] # 0
+        if not self.addr_retry.has_key(addr): # First time
+            self.addr_retry[addr] = 0
+            return self.addr_retry[addr] # 0
 
         else:
-            self.addr_retry[tmp_addr] += 1
-            return self.addr_retry[tmp_addr]
+            self.addr_retry[addr] += 1
+            return self.addr_retry[addr]
 
     def print_rx_filter(self, int):
         #print self.rate
