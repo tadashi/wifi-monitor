@@ -9,7 +9,7 @@ import struct
 import getopt
 
 from framefilter import FrameFilter
-from config impoer Configure
+from config import Configure
 
 MY_ADDRESS = '0e:0a:79:72:f1:32' # SHOULD be got from system call
 snr_threshold = 0 # default
@@ -23,14 +23,16 @@ FILTER = { SNR:False,
            DST:False }
 
 try:
-   optlist, args = getopt.getopt(sys.argv[1:], "i:t:d:s:", longopts=["interface=", "threshold=", "src-addr=", "dst-addr="])
+   optlist, args = getopt.getopt(sys.argv[1:], "t:m:x:s:d:", longopts=["adhoc-interface=", "monitor-interface=", "threshold=", "src-addr=", "dst-addr="])
 except getopt.GetoptError:
    sys.exit(0)
 
 for opt, args in optlist:
-   if opt in ("-i", "--interface"):
-       interface = args
-   if opt in ("-t", "--threshold"):
+   if opt in ("-t", "--adhoc-interface"):
+       adhoc_interface = args
+   if opt in ("-m", "--monitor-interface"):
+       monitor_interface = args
+   if opt in ("-x", "--threshold"):
        snr_threshold = int(args)
        FILTER[SNR] = True
    if opt in ("-s", "--src-addr"):
@@ -46,10 +48,8 @@ if __name__=='__main__':
         print 'usage: monitoring_py.py -i <interface> [-s <src_address> -d <dst_address> -t <SNR_theshold> ]'
         sys.exit(0)
 
-    dev = interface
-
-    cf = Configure(dev, snr_threshold)
-    cf.get_adrr()
+    cf = Configure(adhoc_interface, snr_threshold)
+    cf.get_addr()
 
     ff = FrameFilter(cf.ether_addr, cf.thr, FILTER)
 
@@ -57,7 +57,7 @@ if __name__=='__main__':
     #dev = pcap.lookupdev()
     #net, mask = pcap.lookupnet(dev)
 
-    p.open_live(dev, 96, 0, 100)
+    p.open_live(monitor_interface, 96, 0, 100)
     
     # try-except block to catch keyboard interrupt.    Failure to shut
     # down cleanly can result in the interface not being taken out of promisc.
@@ -78,8 +78,8 @@ if __name__=='__main__':
         # as is the next() method
         # p.next() returns a (pktlen, data, timestamp) tuple 
             apply(ff.filter, p.next())
-            ff.print_rx_filter(dev)
-            ff.print_tx_filter(dev)
+            ff.print_rx_filter(monitor_interface)
+            ff.print_tx_filter(adhoc_interface)
 
     except KeyboardInterrupt:
         print '%s' % sys.exc_type

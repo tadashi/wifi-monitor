@@ -214,7 +214,7 @@ class FrameFilter(object):
         #print self.rx_frame
 
         if not (self.rx_frame % 1000):
-            print "%s: monitoring RX frame" % int
+            print "%s: monitoring RX frame [%u]" % (int, self.rx_frame)
             #print self.addr_snr
             for saddr in self.addr_snr:
                 #print self.addr_snr[saddr].emavalues
@@ -223,10 +223,10 @@ class FrameFilter(object):
 
     def print_tx_filter(self, int):
         #print self.rate
-        #print self.rx_frame
+        #print self.tx_frame
 
-        if not (self.rx_frame % 1000):
-            print "%s: monitoring TX frame" % int
+        if not (self.tx_frame % 1000):
+            print "%s: monitoring TX frame [%u]" % (int, self.tx_frame)
             #print self.addr_snr
 
             for daddr in self.addr_retry:
