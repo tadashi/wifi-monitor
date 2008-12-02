@@ -104,15 +104,14 @@ TX = {
 ## External Library : 
 ##--------------------------------------------------------------------------
 class FrameFilter(object):
-    def __init__(self, maddr, th, ft):
+    def __init__(self, maddr, daddr, th, ft):
         super(FrameFilter, self).__init__()
 
         # Global Values
         self.ft = ft
         self.th = th
         self.maddr = maddr
-
-        self.rx_addr = 0
+        self.dst_addr = daddr
 
         self.addr_snr = {}
         self.addr_retry = {}
@@ -245,8 +244,9 @@ class FrameFilter(object):
         bytes = self.dump_hex(raw)
         
         if self.filter_data(bytes, RX):
-            if self.ft[DST]:
-                if not self.filter_dst_addr(bytes, self.maddr, RX): # When dst address is my address
+            #if self.ft[DST]:  # When packets are sent to this node
+            if 0: # promiscous
+                if not self.filter_dst_addr(bytes, self.maddr, RX):
                     return 0
 
             if self.ft[SNR]:
@@ -262,12 +262,12 @@ class FrameFilter(object):
         bytes = self.dump_hex(raw)
         
         if self.filter_data(bytes, TX):
-            if self.ft[SRC]:
+            if self.ft[SRC]: # When packets are send by this node
                 if not self.filter_src_addr(bytes, self.maddr, TX):
                     return 0
                 
             if self.ft[DST]:
-                if not self.filter_dst_addr(bytes, self.rx_addr, TX):
+                if not self.filter_dst_addr(bytes, self.dst_addr, TX):
                     return 0
 
             if self.filter_bitrate(bytes, TX):

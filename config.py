@@ -5,12 +5,13 @@ import re
 import string
 
 class Configure(object):
-    def __init__(self, interface, threshold):
+    def __init__(self, interface, threshold, dst_addr):
         super(Configure, self).__init__()
 
         self.int = interface
         self.thr = threshold
-
+        self.daddr = dst_addr
+        
         self.ip_addr = ''
         self.ether_addr =''
 
