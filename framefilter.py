@@ -112,6 +112,8 @@ class FrameFilter(object):
         self.th = th
         self.maddr = maddr
 
+        self.rx_addr = 0
+
         self.addr_snr = {}
         self.addr_retry = {}
 
@@ -188,8 +190,8 @@ class FrameFilter(object):
 
     def filter_retry_count(self, bytes, key):
         #print "addr_snr", self.addr_snr
-        tmp_addr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
-        #print bytes[key[RETRY_FLAG]], int(bytes[key[RETRY_FLAG]], 16)
+        tmp_addr = string.join(bytes[key[DST_ADDR]:key[DST_ADDR] + 6], ':')
+        print bytes[key[RETRY_FLAG]], int(bytes[key[RETRY_FLAG]], 16)
 
         if int(bytes[key[RETRY_FLAG]], 16) & 0x08 == 8:
             self.push_retry_count(tmp_addr)

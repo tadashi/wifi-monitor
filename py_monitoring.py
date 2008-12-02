@@ -29,24 +29,24 @@ except getopt.GetoptError:
 
 for opt, args in optlist:
    if opt in ("-t", "--adhoc-interface"):
-       adhoc_interface = args
+      adhoc_interface = args
    if opt in ("-m", "--monitor-interface"):
-       monitor_interface = args
+      monitor_interface = args
    if opt in ("-x", "--threshold"):
-       snr_threshold = int(args)
-       FILTER[SNR] = True
+      snr_threshold = int(args)
+      FILTER[SNR] = True
    if opt in ("-s", "--src-addr"):
-       src_addr = args
-       FILTER[SRC] = True
+      src_addr = args
+      FILTER[SRC] = True
    if opt in ("-d", "--dst-addr"):
-       dst_addr = args
-       FILTER[DST] = True
+      dst_addr = args
+      FILTER[DST] = True
 
 if __name__=='__main__':
 
     if len(sys.argv) < 2:
-        print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [-s <src_address> -d <dst_address> ]'
-        sys.exit(0)
+       print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [-s <src_address> -d <dst_address> ]'
+       sys.exit(0)
 
     cf = Configure(adhoc_interface, snr_threshold)
     cf.get_addr()

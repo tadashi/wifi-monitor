@@ -21,7 +21,7 @@ class Configure(object):
         t = p.read()
         p.close()
         
-        self.ether_addr = re.search("HWaddr ([0-9a-fA-F:]+)", t).group(1)
+        self.ether_addr = string.lower(re.search("HWaddr ([0-9a-fA-F:]+)", t).group(1))
         print string.lower(self.ether_addr)
 
         self.ip_addr =  re.search("inet addr:([0-9.]+)",t).group(1)
