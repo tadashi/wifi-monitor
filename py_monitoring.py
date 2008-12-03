@@ -18,7 +18,7 @@ SRC = 1
 DST = 2
 
 FILTER = { SNR:False,
-           SRC:True
+           SRC:True,
            DST:True }
 
 try:
@@ -78,10 +78,11 @@ if __name__=='__main__':
         # as is the next() method
         # p.next() returns a (pktlen, data, timestamp) tuple 
             apply(ff.filter, p.next())
-            ff.print_rx_filter(monitor_interface)
+            #ff.print_rx_filter(monitor_interface)
             ff.print_tx_filter(adhoc_interface)
+
 
     except KeyboardInterrupt:
         print '%s' % sys.exc_type
-        print 'shutting down'
+        print 'Shutting down'
         print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()

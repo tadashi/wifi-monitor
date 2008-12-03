@@ -6,6 +6,7 @@ import string
 
 #from framfilter import Framefilter
 from average import WeightedAverage
+#from netperf import Netperf
 
 class LinkQuality(object):
     def __init__(self, addr, min):
@@ -21,7 +22,7 @@ class LinkQuality(object):
         self.rate = []
 
     def __repr__(self):
-        return "LinkQuality(addr=%s, snr=%f, retry=%u, all=%u, rate=%s)" % (self.addr, self.snr, self.retry, self.all, self.rate)
+        return "LinkQuality(addr=%s, snr=%f, retry=%u, all=%u, rate=%s)" % (self.addr, self.snr.emavalue(0.8), self.retry, self.all, self.rate)
     
     def __getitem__(self, idx):
         if idx == 0:
@@ -51,16 +52,24 @@ class LinkQuality(object):
         return 5
 
     def calculate(self):
-        tx_loss = float(self.retry) / self.all
-        
-        rtetx = 1.0 / ( 1.0 - tx_loss )
-        
-        return rtetx
+        try:
+            tx_loss = float(self.retry) / self.all
+            rtetx = 1.0 / ( 1.0 - tx_loss )
+
+            return rtetx
+
+        except ZeroDivisionError:
+            return 0.0        
+
 
     def refresh(self):
-        if not (self.all % 1):
+        #if not (self.all % 1):
+        if self.all > 100:
             print "      rt etx  [%s]  : %.2f" % (self.addr, self.calculate())
             self.all = 0
             self.retry = 0
-        
+
+            return 1
+
+        return 0
 

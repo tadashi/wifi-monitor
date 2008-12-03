@@ -10,6 +10,7 @@ import getopt
 
 from average import WeightedAverage
 from linkquality import LinkQuality
+from netperf import Netperf
 
 ## Necesarry Filters
 SNR = 0
@@ -105,7 +106,7 @@ TX = {
 ## External Library : 
 ##--------------------------------------------------------------------------
 class FrameFilter(object):
-    def __init__(self, maddr, daddr, th, ft):
+    def __init__(self, maddr, th, ft):
         super(FrameFilter, self).__init__()
 
         # Static Global Values
@@ -168,10 +169,14 @@ class FrameFilter(object):
         self.push_snr(self.snr, self.saddr)
 
     def push_snr(self, snr, addr):
-        self.addr_lq[addr].snr.push(snr)
+        try:
+            self.addr_lq[addr].snr.push(snr)
+        except KeyError:
+            pass
+            #print "[%s] is currently not registed yet." % addr
 
     def regist_addr_lq(self, addr):
-        if not self.addr_lq.has_key(addr): # First time
+        if not self.addr_lq.has_key(addr) and len(addr) == 17: # First time
             self.addr_lq[addr] = LinkQuality(addr, self.thr)
             print "register receive address: ", self.addr_lq[addr]
 
@@ -211,8 +216,8 @@ class FrameFilter(object):
         if not (self.rx_frame % 1000):
             print "%s: monitoring RX frame [%u]" % (int, self.rx_frame)
             for saddr in self.addr_lq:
-                #print self.addr_lq[saddr].emavalues
-                #print self.addr_lq[saddr].values
+                #print self.addr_lq[saddr].snr.emavalues
+                #print self.addr_lq[saddr].snr.values
                 print "      EMA SNR[%s]  : %f" % (saddr, self.addr_lq[saddr].snr.emavalue(0.8))
 
     def print_tx_filter(self, int):
@@ -224,20 +229,27 @@ class FrameFilter(object):
             #print self.addr_lq
 
             for daddr in self.addr_lq:
-                try:
-                    print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
-                    self.addr_lq[daddr].refresh() # print rtETX value in LinkQuality()
-                except KeyError:
-                    print "[%s] is currently not registed yet." % daddr
-                    
-            
-            print "      8 available bit-rates"
-            for daddr in self.addr_lq:
-                for rate in DATARATE_11a:
+                if self.addr_lq[daddr].snr.emavalue(0.8) > self.thr: # Algorithm 1
                     try:
-                        print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate.count(rate))
+                        print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
+                        print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
+                        if self.addr_lq[daddr].refresh(): # print rtETX value in LinkQuality()
+
+                            nf = Netperf(daddr)
+                            #nf.run("/usr/bin/netperf", "-l 1 -H", daddr)
+                            nf.run("ping", "-s 1024 -i 0.1", daddr)
+                        
+                        
                     except KeyError:
                         print "[%s] is currently not registed yet." % daddr
+                    
+            
+                    print "      8 available bit-rates[%s]:" % daddr
+                    for rate in DATARATE_11a:
+                        try:
+                            print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate.count(rate))
+                        except KeyError:
+                            print "[%s] is currently not registed yet." % daddr
 
 
 ##
@@ -280,6 +292,8 @@ class FrameFilter(object):
                 if self.filter_retry_count(bytes, RX):
                     pass
 
+
+        
             return 1
 
 ##
