@@ -242,13 +242,15 @@ class FrameFilter(object):
                     print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
                     self.addr_lq[daddr].refresh()
                 except KeyError:
-                    print "%s is currently not registed yet." % daddr
+                    print "[%s] is currently not registed yet." % daddr
                     
             
             print "      8 available bit-rates"
             for rate in DATARATE_11a:
-                print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[self.dst_addr].rate.count(rate))
-
+                try:
+                    print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[self.dst_addr].rate.count(rate))
+                except KeyError:
+                    print "[%s] is currently not registed yet." % dst_addr
 
 
 ##
