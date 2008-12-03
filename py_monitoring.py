@@ -12,19 +12,21 @@ from framefilter import FrameFilter
 from config import Configure
 
 snr_threshold = 0 # default
-dst_addr = '00:00:00:00:00:00'
 
 SNR = 0
 SRC = 1
 DST = 2
 
 FILTER = { SNR:False,
-           SRC:False,
-           DST:False }
+           SRC:True
+           DST:True }
 
 try:
-   optlist, args = getopt.getopt(sys.argv[1:], "t:m:x:s:d:", longopts=["adhoc-interface=", "monitor-interface=", "threshold=", "src-addr-filter=", "dst-addr="])
+   optlist, args = getopt.getopt(sys.argv[1:], "t:m:x:s:d:", 
+                                 longopts=["adhoc-interface=", "monitor-interface=", "threshold=",
+                                           "src-addr-filter=", "dst-addr-filter="])
 except getopt.GetoptError:
+   print 'usage: python py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
    sys.exit(0)
 
 for opt, args in optlist:
@@ -36,21 +38,20 @@ for opt, args in optlist:
       snr_threshold = int(args)
       FILTER[SNR] = True
    if opt in ("-s", "--src-addr-filter"):
-      FILTER[SRC] = True
-   if opt in ("-d", "--dst-addr"):
-      dst_addr = string.lower(args)
-      FILTER[DST] = True
+      FILTER[SRC] = False
+   if opt in ("-d", "--dst-addr-filiter"):
+      FILTER[DST] = False
 
 if __name__=='__main__':
 
     if len(sys.argv) < 2:
-       print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> -s 1 -d <dst_address>'
+       print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
        sys.exit(0)
 
-    cf = Configure(adhoc_interface, snr_threshold, dst_addr)
+    cf = Configure(adhoc_interface, snr_threshold)
     cf.get_addr()
 
-    ff = FrameFilter(cf.ether_addr, cf.daddr, cf.thr, FILTER)
+    ff = FrameFilter(cf.ether_addr, cf.thr, FILTER)
 
     p = pcap.pcapObject()
     #dev = pcap.lookupdev()

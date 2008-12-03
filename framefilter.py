@@ -112,12 +112,12 @@ class FrameFilter(object):
         self.fil = ft
         self.thr = th
         self.my_addr = maddr
-        self.dst_addr = daddr
+        #self.dst_addr = daddr
 
         # Variable Local Values
         self.rx_frame = 0
         self.tx_frame = 0
-        self.addr_snr = {}
+        #self.addr_snr = {}
         self.addr_lq = {}
 
         # Static Local Values per frame
@@ -164,24 +164,16 @@ class FrameFilter(object):
     def filter_snr(self, bytes, key):
         self.snr = int(string.atoi(bytes[key[SSISIGNAL]], 16))
 
-        self.regist_addr_snr(self.saddr)
+        self.regist_addr_lq(self.saddr)
         self.push_snr(self.snr, self.saddr)
 
-        if self.snr > self.thr:
-            return 1
-
-        else:
-            #print "FILTERD by SNR"
-            return 0
-
     def push_snr(self, snr, addr):
-        self.addr_snr[addr].push(snr)
+        self.addr_lq[addr].snr.push(snr)
 
-    def regist_addr_snr(self, addr):
-        #print "addr", addr
-        if not self.addr_snr.has_key(addr):
-            self.addr_snr[addr] = WeightedAverage(100, 0)
-            print "received addresses with snr: ", self.addr_snr
+    def regist_addr_lq(self, addr):
+        if not self.addr_lq.has_key(addr): # First time
+            self.addr_lq[addr] = LinkQuality(addr, self.thr)
+            print "register receive address: ", self.addr_lq[addr]
 
 ##
 # TX functions
@@ -209,11 +201,6 @@ class FrameFilter(object):
             #print "FRAME is not retransmitted"
             return 0
 
-    def regist_addr_lq(self, addr):
-        if not self.addr_lq.has_key(addr): # First time
-            self.addr_lq[addr] = LinkQuality(addr)
-
-
 ##
 # Print Functions
 ##
@@ -223,11 +210,10 @@ class FrameFilter(object):
 
         if not (self.rx_frame % 1000):
             print "%s: monitoring RX frame [%u]" % (int, self.rx_frame)
-            #print self.addr_snr
-            for saddr in self.addr_snr:
-                #print self.addr_snr[saddr].emavalues
-                #print self.addr_snr[saddr].values
-                print "      EMA SNR[%s]  : %f" % (saddr, self.addr_snr[saddr].emavalue(0.8))
+            for saddr in self.addr_lq:
+                #print self.addr_lq[saddr].emavalues
+                #print self.addr_lq[saddr].values
+                print "      EMA SNR[%s]  : %f" % (saddr, self.addr_lq[saddr].snr.emavalue(0.8))
 
     def print_tx_filter(self, int):
         #print self.rate
@@ -235,22 +221,23 @@ class FrameFilter(object):
 
         if not (self.tx_frame % 1000):
             print "%s: monitoring TX frame [%u]" % (int, self.tx_frame)
-            #print self.addr_snr
+            #print self.addr_lq
 
             for daddr in self.addr_lq:
                 try:
                     print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
-                    self.addr_lq[daddr].refresh()
+                    self.addr_lq[daddr].refresh() # print rtETX value in LinkQuality()
                 except KeyError:
                     print "[%s] is currently not registed yet." % daddr
                     
             
             print "      8 available bit-rates"
-            for rate in DATARATE_11a:
-                try:
-                    print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[self.dst_addr].rate.count(rate))
-                except KeyError:
-                    print "[%s] is currently not registed yet." % dst_addr
+            for daddr in self.addr_lq:
+                for rate in DATARATE_11a:
+                    try:
+                        print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate.count(rate))
+                    except KeyError:
+                        print "[%s] is currently not registed yet." % daddr
 
 
 ##
@@ -286,7 +273,7 @@ class FrameFilter(object):
                     return 0
                 
             if self.fil[DST]:
-                if not self.filter_dst_addr(bytes, self.dst_addr, RX):
+                if not self.filter_dst_addr(bytes, self.daddr, RX):
                     return 0
 
             if self.filter_bitrate(bytes, RX):
