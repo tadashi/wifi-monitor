@@ -44,14 +44,17 @@ class LinkQuality(object):
         return 4
 
     def calculate(self):
-        tx_loss = self.retry % self.all
+        tx_loss = float(self.retry) / self.all
         
         rtetx = 1.0 / ( 1.0 - tx_loss )
         
         return rtetx
 
     def refresh(self):
-        if not (self.all % 1000):
+        print "all", self.all
+        print "retry", self.retry
+
+        if not (self.all % 1):
             print "      rt etx  [%s]  : %.2f" % (self.addr, self.calculate())
             self.all = 0
             self.retry = 0

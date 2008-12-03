@@ -38,13 +38,13 @@ for opt, args in optlist:
    if opt in ("-s", "--src-addr-filter"):
       FILTER[SRC] = True
    if opt in ("-d", "--dst-addr"):
-      dst_addr = args
+      dst_addr = string.lower(args)
       FILTER[DST] = True
 
 if __name__=='__main__':
 
     if len(sys.argv) < 2:
-       print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [-s 1 -d <dst_address> ]'
+       print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> -s 1 -d <dst_address>'
        sys.exit(0)
 
     cf = Configure(adhoc_interface, snr_threshold, dst_addr)

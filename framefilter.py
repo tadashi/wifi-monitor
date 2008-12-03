@@ -178,6 +178,7 @@ class FrameFilter(object):
         self.addr_snr[addr].push(snr)
 
     def regist_addr_snr(self, addr):
+        #print "addr", addr
         if not self.addr_snr.has_key(addr):
             self.addr_snr[addr] = WeightedAverage(100, 0)
             print "received addresses with snr: ", self.addr_snr
@@ -187,6 +188,7 @@ class FrameFilter(object):
 ##
     def filter_bitrate(self, bytes, key):
         self.rate = string.atoi(bytes[key[DATARATE]], 16) / 2.0
+        self.regist_addr_lq(self.daddr)
 
         if self.rate not in DATARATE_11g:
             #print "DATARATE is UNKNOWN"
@@ -198,16 +200,13 @@ class FrameFilter(object):
 
 
     def filter_retry_count(self, bytes, key):
-        self.regist_addr_lq(self.daddr)
-
+        self.addr_lq[self.daddr].all += 1
         if int(bytes[key[RETRY_FLAG]], 16) & 0x08 == 8:
-            self.addr_lq[self.daddr].all += 1
             self.addr_lq[self.daddr].retry += 1
             return 1
 
         else:
             #print "FRAME is not retransmitted"
-            self.addr_lq[self.daddr].all += 1
             return 0
 
     def regist_addr_lq(self, addr):
@@ -239,12 +238,18 @@ class FrameFilter(object):
             #print self.addr_snr
 
             for daddr in self.addr_lq:
-                print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
-                self.addr_lq[daddr].refresh()
+                try:
+                    print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
+                    self.addr_lq[daddr].refresh()
+                except KeyError:
+                    print "%s is currently not registed yet." % daddr
+                    
             
             print "      8 available bit-rates"
             for rate in DATARATE_11a:
-                print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate.count(rate))
+                print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[self.dst_addr].rate.count(rate))
+
+
 
 ##
 # Main Functions: RX filter & TX filter
@@ -256,7 +261,8 @@ class FrameFilter(object):
         
         if self.filter_data(bytes, RX):
             #if self.fil[DST]:  # When packets are sent to this node
-            if 0: # promiscous
+            if 1: # promiscous
+                self.filter_src_addr(bytes, self.my_addr, RX) # to get self.saddr
                 if not self.filter_dst_addr(bytes, self.my_addr, RX):
                     return 0
 
