@@ -60,6 +60,7 @@ if __name__=='__main__':
     working_iface_monitor = re.compile('0').sub('2', adhoc_interface)
     backup_iface_adhoc = monitor_interface
     backup_iface_monitor = re.compile('1').sub('3', monitor_interface)
+    print "interfaces", working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor
 
     try:
        while 1:
@@ -74,13 +75,13 @@ if __name__=='__main__':
              #ff.print_rx_filter(monitor_interface)
              ff.print_tx_filter(working_iface_adhoc)
 
-          set_interface(backup_iface_adhoc, cf.next()):
-
+          set_interface(backup_iface_adhoc, cf.next())
+          
           print "Netperf Starts"
           nf = Netperf()
           nf.run('ping -s 1024 -c 100 -i 0.01 %s' % cf.ip_daddr)
           print "Netperf Ends"
-
+                        
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
        print 'Shutting down'

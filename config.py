@@ -39,8 +39,6 @@ FREQ_11a = {
     '5.825' : 165
     }
 
-FREQ = FREQ_11g + FREQ_11a
-
 class Configure(object):
     def __init__(self, aiface, miface):
         super(Configure, self).__init__()
@@ -70,8 +68,8 @@ class Configure(object):
         t = p.read()
         p.close()
 
-        tmp_channel = string.lower(re.search("Frequency:([0-9].[0-9]+)", t).group(1))
-        channel = FREQ[tmp_channel]
+        tmp_channel = str(re.search("Frequency:([0-9].[0-9]+)", t).group(1))
+        channel = FREQ_11g[tmp_channel]
 
         print "Monitoring Frequency: Channel %i : %s GHz" % (channel, tmp_channel)
 

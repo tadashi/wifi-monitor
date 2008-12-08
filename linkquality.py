@@ -9,7 +9,7 @@ from average import WeightedAverage
 #from netperf import Netperf
 
 class LinkQuality(object):
-    def __init__(self, addr, min):
+    def __init__(self, addr, min, channel):
         super(LinkQuality, self).__init__()
 
         # TAG value
@@ -23,34 +23,39 @@ class LinkQuality(object):
         self.rate = []
 
     def __repr__(self):
-        return "LinkQuality(addr=%s, snr=%f, retry=%u, all=%u, rate=%s)" % (self.addr, self.snr.emavalue(0.8), self.retry, self.all, self.rate)
+        return "LinkQuality(addr=%s, channel=%i, snr=%f, retry=%u, all=%u, rate=%s)" % 
+    (self.addr, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate)
     
     def __getitem__(self, idx):
         if idx == 0:
             return self.addr
         if idx == 1:
-            return self.snr
+            return self.channel
         if idx == 2:
+            return self.snr
+        if idx == 3:
             return self.retry
-        elif idx == 3:
-            return self.all
         elif idx == 4:
+            return self.all
+        elif idx == 5:
             return self.rate
 
     def __setitem__(self, idx, val):
         if idx == 0:
             self.addr = val
         if idx == 1:
-            self.snr = val
+            self.channel = val
         if idx == 2:
+            self.snr = val
+        if idx == 3:
             self.retry = val
-        elif idx == 3:
-            self.all = val
         elif idx == 4:
+            self.all = val
+        elif idx == 5:
             self.rate = val
 
     def __len__(self):
-        return 5
+        return 6
 
     def calculate(self):
         try:

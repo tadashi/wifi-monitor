@@ -106,13 +106,14 @@ TX = {
 ## External Library : 
 ##--------------------------------------------------------------------------
 class FrameFilter(object):
-    def __init__(self, maddr, th, ft):
+    def __init__(self, maddr, chan, th, ft):
         super(FrameFilter, self).__init__()
 
         # Static Global Values
         self.fil = ft
         self.thr = th
         self.my_addr = maddr
+        self.channel = chan
         #self.dst_addr = daddr
 
         # Variable Local Values
@@ -180,7 +181,7 @@ class FrameFilter(object):
 
     def regist_addr_lq(self, addr):
         if not self.addr_lq.has_key(addr) and len(addr) == 17: # First time
-            self.addr_lq[addr] = LinkQuality(addr, self.thr)
+            self.addr_lq[addr] = LinkQuality(addr, self.thr, self.channel)
             print "register receive address: ", self.addr_lq[addr]
 
 ##
@@ -239,12 +240,7 @@ class FrameFilter(object):
                     try:
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
                         if self.addr_lq[daddr].refresh(): # print rtETX value in LinkQuality()
-
-                            nf = Netperf(daddr)
-                            #nf.run("/usr/bin/netperf", "-l 1 -H", daddr)
-                            #nf.run("ping", "-s 1024 -i 0.1", daddr)
-                            nf.run('ping -s 1024 -c 10 -i 0.1 192.168.2.2')
-                        
+            
                         
                     except KeyError:
                         print "[%s] is currently not registed yet." % daddr
