@@ -42,47 +42,46 @@ for opt, args in optlist:
    if opt in ("-d", "--dst-addr-filiter"):
       FILTER[DST] = False
 
+
+def set_interface(iface, channel):
+   cmd = "iwconfig %s channel %i" % (iface, channel)
+   
+   os.system(cmd)
+   print "----> DONE \" %s \"" % cmd
+
+
 if __name__=='__main__':
 
     if len(sys.argv) < 2:
-       print 'usage: py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
+       print 'usage: sudo py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
        sys.exit(0)
 
-    cf = Configure(adhoc_interface, snr_threshold)
-    cf.get_addr()
+    working_iface_adhoc = adhoc_interface
+    working_iface_monitor = re.compile('0').sub('2', adhoc_interface)
+    backup_iface_adhoc = monitor_interface
+    backup_iface_monitor = re.compile('1').sub('3', monitor_interface)
 
-    ff = FrameFilter(cf.ether_addr, cf.thr, FILTER)
-
-    p = pcap.pcapObject()
-    #dev = pcap.lookupdev()
-    #net, mask = pcap.lookupnet(dev)
-
-    p.open_live(monitor_interface, 96, 0, 100)
-    
-    # try-except block to catch keyboard interrupt.    Failure to shut
-    # down cleanly can result in the interface not being taken out of promisc.
-    # mode
-    #p.setnonblock(1)
     try:
-        while 1:
-        #    p.dispatch(1, print_packet)
+       while 1:
+          cf = Configure(working_iface_adhoc, backup_iface_adhoc)
+          ff = FrameFilter(cf.ether_addr, cf.channel, snr_threshold, FILTER)
+          
+          p = pcap.pcapObject()
+          p.open_live(backup_iface_monitor, 96, 0, 100)
+    
+          while ff.rx_frame < 1000:
+             apply(ff.filter, p.next())
+             #ff.print_rx_filter(monitor_interface)
+             ff.print_tx_filter(working_iface_adhoc)
 
-        # specify 'None' to dump to dumpfile, assuming you have called
-        # the dump_open method
-        #    p.dispatch(0, None)
+          set_interface(backup_iface_adhoc, cf.next()):
 
-        # the loop method is another way of doing things
-        #    p.loop(1, print_packet)
-            #p.loop(1, f.filter_rx)
-
-        # as is the next() method
-        # p.next() returns a (pktlen, data, timestamp) tuple 
-            apply(ff.filter, p.next())
-            #ff.print_rx_filter(monitor_interface)
-            ff.print_tx_filter(adhoc_interface)
-
+          print "Netperf Starts"
+          nf = Netperf()
+          nf.run('ping -s 1024 -c 100 -i 0.01 %s' % cf.ip_daddr)
+          print "Netperf Ends"
 
     except KeyboardInterrupt:
-        print '%s' % sys.exc_type
-        print 'Shutting down'
-        print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
+       print '%s' % sys.exc_type
+       print 'Shutting down'
+       print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()

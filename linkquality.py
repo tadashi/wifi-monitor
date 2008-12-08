@@ -16,6 +16,7 @@ class LinkQuality(object):
         self.addr = addr
 
         # Local values
+        self.channel = channel
         self.snr = WeightedAverage(100, min) # min = snr_threshold
         self.retry = 0
         self.all = 0

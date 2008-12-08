@@ -171,9 +171,12 @@ class FrameFilter(object):
     def push_snr(self, snr, addr):
         try:
             self.addr_lq[addr].snr.push(snr)
+            print "DEBUG [%s]: SNR = %i" % (addr, snr)
+
         except KeyError:
-            pass
             #print "[%s] is currently not registed yet." % addr
+            pass
+
 
     def regist_addr_lq(self, addr):
         if not self.addr_lq.has_key(addr) and len(addr) == 17: # First time
@@ -229,15 +232,18 @@ class FrameFilter(object):
             #print self.addr_lq
 
             for daddr in self.addr_lq:
+                #print self.addr_lq[daddr].snr.emavalue(0.8)
+                print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
+
                 if self.addr_lq[daddr].snr.emavalue(0.8) > self.thr: # Algorithm 1
                     try:
-                        print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
                         if self.addr_lq[daddr].refresh(): # print rtETX value in LinkQuality()
 
                             nf = Netperf(daddr)
                             #nf.run("/usr/bin/netperf", "-l 1 -H", daddr)
-                            nf.run("ping", "-s 1024 -i 0.1", daddr)
+                            #nf.run("ping", "-s 1024 -i 0.1", daddr)
+                            nf.run('ping -s 1024 -c 10 -i 0.1 192.168.2.2')
                         
                         
                     except KeyError:
@@ -260,14 +266,16 @@ class FrameFilter(object):
         self.rx_frame += 1
         bytes = self.dump_hex(raw)
         
-        if self.filter_data(bytes, RX):
+        #if self.filter_data(bytes, RX):
+        if 1: # promiscous data type
             #if self.fil[DST]:  # When packets are sent to this node
-            if 1: # promiscous
+            if 1:
                 self.filter_src_addr(bytes, self.my_addr, RX) # to get self.saddr
-                if not self.filter_dst_addr(bytes, self.my_addr, RX):
-                    return 0
+                self.filter_dst_addr(bytes, self.my_addr, RX) # to get self.daddr
+                
 
-            if self.fil[SNR]:
+            #if self.fil[SNR]:
+            if 1:
                 if not self.filter_snr(bytes, RX):
                     return 0
         
