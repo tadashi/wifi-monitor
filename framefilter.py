@@ -10,6 +10,7 @@ import getopt
 
 from average import WeightedAverage
 from linkquality import LinkQuality
+from netperf import Netperf
 
 ## Necesarry Filters
 SNR = 0
@@ -273,10 +274,12 @@ class FrameFilter(object):
                 #print self.addr_lq[daddr].snr.emavalue(0.8)
                 print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
 
-                if self.is_higher(daddr): # Algorithm 1
+                if self.is_higher(daddr): # Algorithm 1, but just for print purpose
                     try:
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
-                        self.addr_lq[daddr].refresh(self.timestamp) # print rtETX value in LinkQuality()
+                        nf = Netperf(daddr)
+                        tmp_ping_quality = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 10 -q %s' % (daddr), daddr)
+                        self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
 
                     except KeyError:
                         print "[%s] is currently not registed yet." % daddr

@@ -78,7 +78,7 @@ if __name__=='__main__':
           while ff.rx_frame < 100: # Only beacon frames counted
              apply(ff.filter, p.next())
              #ff.print_rx_filter(backup_iface_monitor)
-             ff.print_tx_filter(working_iface_adhoc)
+             ff.print_tx_filter(working_iface_adhoc) # maybe 1s
 
           # Initialization
           ff.rx_frame = 0 # RX frame count set 0 for next channel
@@ -88,11 +88,11 @@ if __name__=='__main__':
 
           # Algorithm 2
           if ff.is_higher(cf.ether_daddr):
-             #print "Netperf Starts "
+             print "Netperf Starts "
              nf = Netperf(cf.ip_daddr)
              #nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
-             nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr)
-             #print "Netperf Ends"
+             nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
+             print "Netperf Ends"
 
 
     except KeyboardInterrupt:
@@ -104,4 +104,4 @@ if __name__=='__main__':
        #print "ff.tx_frame : %i [frame]" % ff.tx_frame
        for daddr in ff.addr_lq:
           #print ff.addr_lq[daddr]
-          print ff.addr_lq[daddr].rtetx
+          print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx)

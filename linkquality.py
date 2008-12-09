@@ -60,12 +60,12 @@ class LinkQuality(object):
     def __len__(self):
         return 7
 
-    def calculate(self, timestamp):
+    def calculate(self, timestamp, rtt):
         try:
             tx_loss = float(self.retry) / self.all
             tmp_rtetx = 1.0 / ( 1.0 - tx_loss )
 
-            self.rtetx[timestamp] = tmp_rtetx
+            self.rtetx[timestamp] = [ tmp_rtetx, rtt ]
             
             return tmp_rtetx
 
@@ -73,14 +73,13 @@ class LinkQuality(object):
             return 0.0        
 
 
-    def refresh(self, timestamp):
+    def refresh(self, timestamp, rtt):
         #if not (self.all % 1):
         if self.all > 80:
-            print "      rt etx  [%s]  : %.2f" % (self.addr, self.calculate(timestamp))
+            print "      rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(timestamp, rtt), rtt)
             self.all = 0
             self.retry = 0
 
             return 1
 
         return 0
-
