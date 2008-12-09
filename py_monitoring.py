@@ -96,8 +96,14 @@ if __name__=='__main__':
              #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
              print "Netperf Ends"
 
-          if current_lq + 0.1 < ff.addr_lq[cf.ether_daddr].lq: # previous rtetx of counterpart
-             print "HANDOVER WILL BE CONDUCTED HERE"
+          try:
+             previous_lq = ff.addr_lq[cf.ether_daddr].lq
+             print "cur %f, pre %f" % (current_lq, previous_lq)
+             if current_lq + 0.1 < previous_lq: # previous rtetx of counterpart
+                print "HANDOVER WILL BE CONDUCTED HERE"
+
+          except KeyError:
+             print "FIRST TIME"
 
     except KeyboardInterrupt:
        print '%s' % sys.exc_type

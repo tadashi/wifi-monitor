@@ -8,7 +8,6 @@ import socket
 import struct
 import getopt
 
-from average import WeightedAverage
 from linkquality import LinkQuality
 from netperf import Netperf
 

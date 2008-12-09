@@ -29,13 +29,13 @@ class WeightedAverage(object):
 
     def emavalue(self, smooth):
         """docstring for emavalue"""
-        l = len(self.values)
+        #l = len(self.values)
 
         if self.emavalues == []:
-            self.emapush(0)
-            self.emapush(self.values[l - 1])
+            self.emapush(self.values[-2])
+            self.emapush(self.values[-1])
 
-            return self.values[l - 1]
+            return self.values[-1]
 
         else:
             #print "self.emavalues", self.emavalues
@@ -43,7 +43,7 @@ class WeightedAverage(object):
 
             #print self.emavalues[1], self.values[l-1]
             
-            sn = smooth * self.emavalues[1] + (1 - smooth) * self.values[l - 1]
+            sn = smooth * self.emavalues[-1] + (1 - smooth) * self.values[-1]
             self.emapush(sn)
             
         return sn
