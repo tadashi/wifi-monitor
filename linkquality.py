@@ -74,7 +74,7 @@ class LinkQuality(object):
 
 
     def refresh(self, timestamp, rtt):
-        #if not (self.all % 1):
+        print "rtt", rtt
         if self.all > 80:
             print "      rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(timestamp, rtt), rtt)
             self.all = 0

@@ -2,6 +2,7 @@
 
 import subprocess
 import re
+import os
 
 template1 = "packets transmitted, (\d+) received, (\d)% packet loss, time (\d+)ms"
 
@@ -31,7 +32,7 @@ class Netperf(object):
         line = po.readline()
 
         if not line:
-            print "in ping_test(): ping_test timeout." 
+            print "in ping_test(%s): ping_test timeout." % daddr 
             return 0
 
         while line:
@@ -50,6 +51,7 @@ class Netperf(object):
             r1 = re.compile(template1)
             m1 = r1.search(line1)
     
+            print "m1", m1
             if m1 == None:
                 print "in ping_test(): ping_test failed." 
                 return 0

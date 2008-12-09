@@ -116,6 +116,7 @@ class FrameFilter(object):
         super(FrameFilter, self).__init__()
 
         # Static Global Values
+        self.cf = cf
         self.fil = ft
         self.thr = th
         self.my_addr = [ cf.ether_aaddr, cf.ether_maddr ]
@@ -278,7 +279,7 @@ class FrameFilter(object):
                     try:
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
                         nf = Netperf(daddr)
-                        tmp_ping_quality = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 10 -q %s' % (daddr), daddr)
+                        tmp_ping_quality = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 10 -q %s' % (self.cf.ip_daddr), self.cf.ip_daddr)
                         self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
 
                     except KeyError:
