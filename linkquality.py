@@ -20,9 +20,10 @@ class LinkQuality(object):
         self.retry = 0
         self.all = 0
         self.rate = []
+        self.rtetx = {}
 
     def __repr__(self):
-        return "LinkQuality(addr=%s, channel=%i, snr=%f, retry=%u, all=%u, rate=%s)" % (self.addr, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate)
+        return "LinkQuality(addr=%s, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s)" % (self.addr, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx)
     
     def __getitem__(self, idx):
         if idx == 0:
@@ -37,6 +38,8 @@ class LinkQuality(object):
             return self.all
         elif idx == 5:
             return self.rate
+        elif idx == 6:
+            return self.rtetx
 
     def __setitem__(self, idx, val):
         if idx == 0:
@@ -51,25 +54,29 @@ class LinkQuality(object):
             self.all = val
         elif idx == 5:
             self.rate = val
+        elif idx == 6:
+            self.rtetx = val
 
     def __len__(self):
-        return 6
+        return 7
 
-    def calculate(self):
+    def calculate(self, timestamp):
         try:
             tx_loss = float(self.retry) / self.all
-            rtetx = 1.0 / ( 1.0 - tx_loss )
+            tmp_rtetx = 1.0 / ( 1.0 - tx_loss )
 
-            return rtetx
+            self.rtetx[timestamp] = tmp_rtetx
+            
+            return tmp_rtetx
 
         except ZeroDivisionError:
             return 0.0        
 
 
-    def refresh(self):
+    def refresh(self, timestamp):
         #if not (self.all % 1):
         if self.all > 80:
-            print "      rt etx  [%s]  : %.2f" % (self.addr, self.calculate())
+            print "      rt etx  [%s]  : %.2f" % (self.addr, self.calculate(timestamp))
             self.all = 0
             self.retry = 0
 

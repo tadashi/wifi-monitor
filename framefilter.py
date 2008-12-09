@@ -122,6 +122,7 @@ class FrameFilter(object):
         #self.dst_addr = daddr
 
         # Variable Local Values
+        self.timestamp = ''
         self.frame = 0
         self.rx_frame = 0
         self.tx_frame = 0
@@ -144,7 +145,8 @@ class FrameFilter(object):
                 return False
         
         except KeyError:
-            print "is_higher(): pass"
+            pass
+            #print "is_higher(): pass"
         
     def dump_hex(self, raw):
         return map(lambda x: '%.2x' % x, map(ord, raw))
@@ -274,7 +276,7 @@ class FrameFilter(object):
                 if self.is_higher(daddr): # Algorithm 1
                     try:
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
-                        self.addr_lq[daddr].refresh() # print rtETX value in LinkQuality()
+                        self.addr_lq[daddr].refresh(self.timestamp) # print rtETX value in LinkQuality()
 
                     except KeyError:
                         print "[%s] is currently not registed yet." % daddr
@@ -353,9 +355,11 @@ class FrameFilter(object):
 ##
     def filter(self, pktlen, raw, timestamp):
         """docstring for filter"""
+        self.timestamp = timestamp
+        self.frame += 1
+
         bytes = self.dump_hex(raw)
         key = self.filter_rt(bytes)
-        self.frame += 1
 
         #self.filter_rx(bytes, key)
         #self.filter_tx(bytes, key)

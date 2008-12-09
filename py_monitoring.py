@@ -77,7 +77,7 @@ if __name__=='__main__':
        while 1:
           while ff.rx_frame < 100: # Only beacon frames counted
              apply(ff.filter, p.next())
-             ff.print_rx_filter(backup_iface_monitor)
+             #ff.print_rx_filter(backup_iface_monitor)
              ff.print_tx_filter(working_iface_adhoc)
 
           # Initialization
@@ -90,11 +90,10 @@ if __name__=='__main__':
           if ff.is_higher(cf.ether_daddr):
              #print "Netperf Starts "
              nf = Netperf(cf.ip_daddr)
-             nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
+             #nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
+             nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr)
              #print "Netperf Ends"
 
-                    
-          time.sleep(1)
 
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
@@ -102,6 +101,7 @@ if __name__=='__main__':
        print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
 
        print "ff.rx_frame : %i [frame]" % ff.rx_frame
-       print "ff.tx_frame : %i [frame]" % ff.tx_frame
+       #print "ff.tx_frame : %i [frame]" % ff.tx_frame
        for daddr in ff.addr_lq:
-          print ff.addr_lq[daddr]
+          #print ff.addr_lq[daddr]
+          print ff.addr_lq[daddr].rtetx
