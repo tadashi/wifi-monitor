@@ -42,8 +42,8 @@ FREQ_11a = {
     }
 
 # From the view point of Robooc6
-Robohoc4 = AP(40, '192.168.4.6', '192.168.4.4')
-Robohoc5 = AP(60, '192.168.6.6', '192.168.6.5')
+Robohoc4 = AP(40, '192.168.4.6', '192.168.4.4', '00:80:92:3e:18:11')
+Robohoc5 = AP(60, '192.168.6.6', '192.168.6.5', '00:80:92:3d:45:df')
 Robohoc = [ Robohoc4, Robohoc5 ]
 
 class Configure(object):
