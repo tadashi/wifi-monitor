@@ -42,8 +42,8 @@ FREQ_11a = {
     }
 
 # From the view point of Robooc6
-Robohoc4 = AP(40, '192.168.4.6', '192.168.4.4', '00:80:92:3e:18:11')
-Robohoc5 = AP(60, '192.168.6.6', '192.168.6.5', '00:80:92:3d:45:df')
+Robohoc4 = AP(40, '192.168.4.6', '192.168.4.4', '192.168.100.4', '00:80:92:3e:18:11')
+Robohoc5 = AP(60, '192.168.6.6', '192.168.6.5', '192.168.100.5', '00:80:92:3d:45:df')
 Robohoc = [ Robohoc4, Robohoc5 ]
 
 class Configure(object):
@@ -59,6 +59,9 @@ class Configure(object):
         self.ip_saddr, self.ip_daddr = self.get_addr(self.channel) # Static info
         self.ether_daddr = ''
         
+        # Overlay interface
+        self.vip_daddr = ''
+
     def info_addr(self, int):
         
         p = os.popen("/sbin/ifconfig %s" % int)
@@ -100,12 +103,14 @@ class Configure(object):
             self.ip_saddr = Robohoc5.sip
             self.ip_daddr = Robohoc5.dip
             self.ether_daddr = Robohoc5.dether
+            self.vip_daddr = Robohoc5.dcip
 
         elif self.channel == Robohoc5.ch:
             self.channel = Robohoc4.ch
             self.ip_saddr = Robohoc4.sip
             self.ip_daddr = Robohoc4.dip
             self.ether_daddr = Robohoc4.dether
+            self.vip_daddr = Robohoc4.dcip
 
         else:
             print "WARNING: "

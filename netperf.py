@@ -5,6 +5,7 @@ import re
 import os
 
 template1 = "packets transmitted, (\d+) received, (\d)% packet loss, time (\d+)ms"
+template2 = "rtt min/avg/max/mdev = (\d+.\d*)/(\d+.\d*)/(\d+.\d*)/(\d+.\d*) ms"
 
 class Netperf(object):
     def __init__(self, addr):
@@ -28,7 +29,7 @@ class Netperf(object):
     def ping(self, cmd, daddr):
         skipped = True # skipped
 
-        po = os.popen(cmd)
+        po = os.popen(cmd) # 1s
         line = po.readline()
 
         if not line:
@@ -40,35 +41,34 @@ class Netperf(object):
             if skipped:
                 if line == "--- %s ping statistics ---" % daddr:
                     skipped = False
-                    line = po.readline()
-                    continue
+                line = po.readline()
+                continue
 
-                line1 = line
-                line2 = po.readline()
-                break
+            line1 = line
+            line2 = po.readline()
+            break
 
-            #extract results of ping
-            r1 = re.compile(template1)
-            m1 = r1.search(line1)
-    
-            print "m1", m1
-            if m1 == None:
-                print "in ping_test(): ping_test failed." 
-                return 0
+        #extract results of ping
+        r1 = re.compile(template1)
+        m1 = r1.search(line1)
 
-            received = float(m1.group(1))
-            dropped = float(m1.group(2))
+        if m1 == None:
+            print "in ping_test(%s): ping_test failed." % daddr 
+            return 0
 
-            r2 = re.compile(template2)
-            m2 = r2.search(line2)
-            min = float(m2.group(1))
-            ave = float(m2.group(2))
-            max = float(m2.group(3))
-            dev = float(m2.group(4))
+        received = float(m1.group(1))
+        dropped = float(m1.group(2))
 
-            #print "%.2f / %.2f" % (received, received + dropped)
-            #print "min: %.2f, ave: %.2f, max: %.2f" % (min, ave, max)
+        r2 = re.compile(template2)
+        m2 = r2.search(line2)
+        min = float(m2.group(1))
+        ave = float(m2.group(2))
+        max = float(m2.group(3))
+        dev = float(m2.group(4))
 
-            print "in ping_test(): ping_test done." 
-            #return (received + dropped) / received * ave
-            return ave
+        #print "%.2f / %.2f" % (received, received + dropped)
+        #print "min: %.2f, ave: %.2f, max: %.2f" % (min, ave, max)
+
+        print "in ping_test(%s): ping_test done." % daddr
+        #return (received + dropped) / received * ave
+        return ave
