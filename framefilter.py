@@ -299,9 +299,7 @@ class FrameFilter(object):
             self.filter_dst_addr(bytes, self.my_addr, key) # to get self.daddr
 
             #if self.fil[SNR]:
-            self.filter_snr(bytes, key):
-
-
+            self.filter_snr(bytes, key)
 
 
     def filter_tx(self, bytes, key):
@@ -320,8 +318,32 @@ class FrameFilter(object):
 
             if self.filter_bitrate(bytes, key):
                 if self.filter_retry_count(bytes, key):
+                    return 1
 
-            return 1
+
+
+    def filter_rt(self, bytes, key):
+        """docstring for filter_rt"""
+        self.rx_frame += 1        
+
+        if self.filter_beacon(bytes, key): # Measure SNR from beacon frames
+            self.filter_src_addr(bytes, self.my_addr, key) # to get self.saddr
+            self.filter_dst_addr(bytes, self.my_addr, key) # to get self.daddr
+            self.filter_snr(bytes, key)
+
+        self.tx_frame += 1        
+
+        elif self.filter_data(bytes, key):
+            if self.fil[SRC]: # When packets are sent by this node
+                if not self.filter_src_addr(bytes, self.my_addr, key):
+                    return 0
+                
+            if self.fil[DST]: # No need?
+                if not self.filter_dst_addr(bytes, self.daddr, key):
+                    return 0
+
+            if self.filter_bitrate(bytes, key):
+                self.filter_retry_count(bytes, key)
 
 ##
 # Callable Function
@@ -332,6 +354,6 @@ class FrameFilter(object):
         key = self.filter_rt(bytes)
         self.frame += 1
 
-        self.filter_rx(bytes, key)
-        self.filter_tx(bytes, key)
-
+        #self.filter_rx(bytes, key)
+        #self.filter_tx(bytes, key)
+        self.filter_rt(bytes, key)
