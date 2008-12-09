@@ -56,8 +56,7 @@ class Configure(object):
         # Monitor interface
         self.ip_maddr, self.ether_maddr = self.info_addr(miface)
         self.channel = self.get_channel(miface)
-        self.ip_saddr, self.ip_daddr = self.get_addr(self.channel) # Static info
-        self.ether_daddr = ''
+        self.ip_saddr, self.ip_daddr, self.ether_daddr = self.get_addr(self.channel) # Static info
         
         # Overlay interface
         self.vip_daddr = ''
@@ -89,10 +88,10 @@ class Configure(object):
 
     def get_addr(self, channel):
         if channel == Robohoc4.ch:
-            return Robohoc4.sip, Robohoc4.dip
+            return Robohoc4.sip, Robohoc4.dip, Robohoc4.dether
 
         elif channel == Robohoc5.ch:
-            return Robohoc5.sip, Robohoc5.dip
+            return Robohoc5.sip, Robohoc5.dip, Robohoc5.dether
 
         else:
             print "WARNING: "

@@ -75,12 +75,14 @@ if __name__=='__main__':
 
     try:
        while 1:
-          while ff.rx_frame < 100: # Only beacon frames counted
+          while ff.rx_frame < 101: # Only beacon frames counted
              apply(ff.filter, p.next())
              #ff.print_rx_filter(backup_iface_monitor)
              ff.print_tx_filter(working_iface_adhoc) # maybe 1s
 
           # Initialization
+          print "cf.ether_daddr", cf.ether_daddr
+          current_lq = ff.addr_lq[cf.ether_daddr].lq # rtetx of scanned neighbor host
           ff.rx_frame = 0 # RX frame count set 0 for next channel
           ff.tx_frame = 0 # TX frame count set 0 for next channel
           cf.next() # Configuration for next channel
@@ -89,19 +91,22 @@ if __name__=='__main__':
           # Algorithm 2
           if ff.is_higher(cf.ether_daddr):
              print "Netperf Starts "
-             nf = Netperf(cf.ip_daddr)
+             #nf = Netperf(cf.ip_daddr)
              #nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
-             nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
+             #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
              print "Netperf Ends"
 
+          if current_lq + 0.1 < ff.addr_lq[cf.ether_daddr].lq: # previous rtetx of counterpart
+             print "HANDOVER WILL BE CONDUCTED HERE"
 
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
        print 'Shutting down'
        print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
 
+       print "ff.frame : %i [frame]" % ff.frame
        print "ff.rx_frame : %i [frame]" % ff.rx_frame
-       #print "ff.tx_frame : %i [frame]" % ff.tx_frame
+
        for daddr in ff.addr_lq:
           #print ff.addr_lq[daddr]
           print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx)
