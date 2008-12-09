@@ -9,8 +9,10 @@ class Netperf(object):
         self.addr = addr
         self.sts = 0
 
-    def run(self, cmd, opt, arg):
-        self.sts = subprocess.call([cmd, opt, arg], shell=False)
+    def run(self, cmd, arg):
+        #self.sts = subprocess.call([cmd, opt, arg], shell=False)
+        self.sts = subprocess.Popen(cmd + " " + arg, shell=True)
+        print "Netperf: '%s %s ' " %  (cmd, arg)
 
     def status(self):
         if self.sts == 0:
