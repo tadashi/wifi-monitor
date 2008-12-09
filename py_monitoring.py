@@ -84,7 +84,7 @@ if __name__=='__main__':
           set_interface(backup_iface_adhoc, cf.channel, cf.ip_saddr) # Setup interface for next channel
 
           # Algorithm 2
-          if ff.is_higher(cf.ip_daddr):
+          if ff.is_higher(cf.):
              print "Netperf Starts"
              nf = Netperf(cf.ip_daddr)
              nf.run('ping -s 1024 -c 80 -i 0.01 %s > /dev/null' % cf.ip_daddr)
