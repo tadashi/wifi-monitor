@@ -69,7 +69,7 @@ if __name__=='__main__':
     print "Interfaces: [wa: %s] [wm: %s] [ba: %s] [bm: %s]" % (working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor)
 
     cf = Configure(working_iface_adhoc, backup_iface_adhoc)
-    ff = FrameFilter(cf.ether_addr, cf.channel, snr_threshold, FILTER)
+    ff = FrameFilter(cf, snr_threshold, FILTER)
     p = pcap.pcapObject()
     p.open_live(backup_iface_monitor, 96, 0, 100)
 

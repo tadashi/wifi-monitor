@@ -51,11 +51,12 @@ class Configure(object):
         super(Configure, self).__init__()
 
         # Ad-hoc interface
-        self.ip_addr, self.ether_addr = self.info_addr(aiface)
+        self.ip_aaddr, self.ether_aaddr = self.info_addr(aiface)
 
         # Monitor interface
+        self.ip_maddr, self.ether_maddr = self.info_addr(miface)
         self.channel = self.get_channel(miface)
-        self.ip_saddr, self.ip_daddr = self.get_addr(self.channel)
+        self.ip_saddr, self.ip_daddr = self.get_addr(self.channel) # Static info
         self.ether_daddr = ''
         
     def info_addr(self, int):

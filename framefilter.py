@@ -41,6 +41,7 @@ DATARATE_11g = [1.0, 2.0, 5.5, 11.0] + DATARATE_11a
 LENGTH = 2
 DATARATE = 17
 CHANNEL_FREQ = 18 # 18, 19
+RADIO_RETRY_FLAG = 22
 SSISIGNAL = 25
 
 RADIOTAP_RX = { 
@@ -52,9 +53,9 @@ RADIOTAP_RX = {
 
 RADIOTAP_TX = { 
    LENGTH:LENGTH,     
-   DATARATE:DATARATE 
+   DATARATE:DATARATE,
+   RADIO_RETRY_FLAG:RADIO_RETRY_FLAG
    }
-             
 
 #### IEEE 802.11 MAC Header
 OFFSET = 3
@@ -98,7 +99,7 @@ TX = {
    DST_ADDR:IEEE_DATA_TX[DST_ADDR],
    SUBTYPE:IEEE_DATA_TX[SUBTYPE],
    DATARATE:RADIOTAP_TX[DATARATE],
-   RETRY_FLAG:IEEE_DATA_TX[RETRY_FLAG]
+   RETRY_FLAG:RADIOTAP_TX[RADIO_RETRY_FLAG]
    }
 
 ### Class FrameFilter
@@ -110,14 +111,14 @@ TX = {
 ## External Library : 
 ##--------------------------------------------------------------------------
 class FrameFilter(object):
-    def __init__(self, maddr, chan, th, ft):
+    def __init__(self, cf, th, ft):
         super(FrameFilter, self).__init__()
 
         # Static Global Values
         self.fil = ft
         self.thr = th
-        self.my_addr = maddr
-        self.channel = chan
+        self.my_addr = [ cf.ether_aaddr, cf.ether_maddr ]
+        self.channel = cf.channel
         #self.dst_addr = daddr
 
         # Variable Local Values
@@ -174,7 +175,7 @@ class FrameFilter(object):
 
     def filter_src_addr(self, bytes, addr, key):
         self.saddr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
-        if cmp(self.saddr, addr) == 0:
+        if self.saddr in addr:
             return 1
 
         else:
@@ -183,7 +184,7 @@ class FrameFilter(object):
 
     def filter_dst_addr(self, bytes, addr, key):
         self.daddr = string.join(bytes[key[DST_ADDR]:key[DST_ADDR] + 6], ':')
-        if cmp(self.daddr, addr) == 0:
+        if self.daddr in addr:
             return 1
 
         else:
@@ -232,7 +233,10 @@ class FrameFilter(object):
 
     def filter_retry_count(self, bytes, key):
         self.addr_lq[self.daddr].all += 1
-        if int(bytes[key[RETRY_FLAG]], 16) & 0x08 == 8:
+        tmp_flag = int(bytes[key[RETRY_FLAG]], 16)
+
+        print "tmp_flag", tmp_flag, bytes[key[RETRY_FLAG]]
+        if tmp_flag & 0x08 == 8 or bytes[key[RETRY_FLAG]] == '01':
             self.addr_lq[self.daddr].retry += 1
             return 1
 
@@ -295,7 +299,7 @@ class FrameFilter(object):
         #if self.filter_data(bytes, key): # Measure SNR from data frames
         #if 1: # promiscous data type 
             #if self.fil[DST]:  # When packets are sent to this node
-            self.filter_src_addr(bytes, self.my_addr, key) # to get self.saddr
+            self.filter_src_addr(bytes, [], key) # to get self.saddr
             self.filter_dst_addr(bytes, self.my_addr, key) # to get self.daddr
 
             #if self.fil[SNR]:
@@ -309,7 +313,7 @@ class FrameFilter(object):
 
         if self.filter_data(bytes, key):
             if self.fil[SRC]: # When packets are sent by this node
-                if not self.filter_src_addr(bytes, self.my_addr, key):
+                if not self.filter_src_addr(bytes, [], key):
                     return 0
                 
             if self.fil[DST]:
@@ -322,25 +326,24 @@ class FrameFilter(object):
 
 
 
-    def filter_rt(self, bytes, key):
+    def filter_rxtx(self, bytes, key):
         """docstring for filter_rt"""
         self.rx_frame += 1        
+        self.tx_frame += 1        
 
         if self.filter_beacon(bytes, key): # Measure SNR from beacon frames
-            self.filter_src_addr(bytes, self.my_addr, key) # to get self.saddr
+            self.filter_src_addr(bytes, [], key) # to get self.saddr
             self.filter_dst_addr(bytes, self.my_addr, key) # to get self.daddr
             self.filter_snr(bytes, key)
-
-        self.tx_frame += 1        
 
         elif self.filter_data(bytes, key):
             if self.fil[SRC]: # When packets are sent by this node
                 if not self.filter_src_addr(bytes, self.my_addr, key):
                     return 0
                 
-            if self.fil[DST]: # No need?
-                if not self.filter_dst_addr(bytes, self.daddr, key):
-                    return 0
+            #if self.fil[DST]: # No need?
+            #    if not self.filter_dst_addr(bytes, self.daddr, key):
+            #        return 0
 
             if self.filter_bitrate(bytes, key):
                 self.filter_retry_count(bytes, key)
@@ -356,4 +359,4 @@ class FrameFilter(object):
 
         #self.filter_rx(bytes, key)
         #self.filter_tx(bytes, key)
-        self.filter_rt(bytes, key)
+        self.filter_rxtx(bytes, key)
