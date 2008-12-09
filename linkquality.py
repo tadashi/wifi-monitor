@@ -4,9 +4,8 @@ import os
 import re
 import string
 
-#from framfilter import Framefilter
 from average import WeightedAverage
-#from netperf import Netperf
+
 
 class LinkQuality(object):
     def __init__(self, addr, min, channel):
@@ -23,8 +22,7 @@ class LinkQuality(object):
         self.rate = []
 
     def __repr__(self):
-        return "LinkQuality(addr=%s, channel=%i, snr=%f, retry=%u, all=%u, rate=%s)" % 
-    (self.addr, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate)
+        return "LinkQuality(addr=%s, channel=%i, snr=%f, retry=%u, all=%u, rate=%s)" % (self.addr, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate)
     
     def __getitem__(self, idx):
         if idx == 0:

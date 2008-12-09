@@ -4,6 +4,8 @@ import os
 import re
 import string
 
+from ap import AP
+
 FREQ_11g = {
     '2.412' : 1,
     '2.417' : 2,
@@ -39,18 +41,23 @@ FREQ_11a = {
     '5.825' : 165
     }
 
+# From the view point of Robooc6
+Robohoc4 = AP(40, '192.168.4.6', '192.168.4.4')
+Robohoc5 = AP(60, '192.168.6.6', '192.168.6.5')
+Robohoc = [ Robohoc4, Robohoc5 ]
+
 class Configure(object):
     def __init__(self, aiface, miface):
         super(Configure, self).__init__()
 
         # Ad-hoc interface
-        self.ip_addr, self.ether_addr = self.get_addr(aiface)
+        self.ip_addr, self.ether_addr = self.info_addr(aiface)
 
         # Monitor interface
         self.channel = self.get_channel(miface)
-        self.ip_daddr = self.get_daddr(self.channel)
+        self.ip_saddr, self.ip_daddr = self.get_addr(self.channel)
 
-    def get_addr(self, int):
+    def info_addr(self, int):
         
         p = os.popen("/sbin/ifconfig %s" % int)
         t = p.read()
@@ -69,37 +76,32 @@ class Configure(object):
         p.close()
 
         tmp_channel = str(re.search("Frequency:([0-9].[0-9]+)", t).group(1))
-        channel = FREQ_11g[tmp_channel]
+        channel = FREQ_11a[tmp_channel]
 
         print "Monitoring Frequency: Channel %i : %s GHz" % (channel, tmp_channel)
 
         return channel
 
-    def get_daddr(self, channel):
-        if channel = 40:
-            return '192.168.4.4'
+    def get_addr(self, channel):
+        if channel == Robohoc4.ch:
+            return Robohoc4.s, Robohoc4.d
 
-        elif channel = 60:
-            return '192.168.6.5'
+        elif channel == Robohoc5.ch:
+            return Robohoc5.s, Robohoc5.d
 
+        else:
+            print "WARNING: "
 
     def next(self):
-        # 11b/g
-        if self.channel < 11:
-            self.channel = self.channel + 5
-            return self.channel + 5
-        elif self.channel == 11:
-            self.channel = 1
-            return 1
+        if self.channel == Robohoc4.ch:
+            self.channel = Robohoc5.ch
+            self.ip_saddr = Robohoc5.s
+            self.ip_daddr = Robohoc5.d
 
-        # 11a
-        elif self.channel > 36 and self.channel < 64:
-            self.channel = self.channel + 4
-            return self.channel + 4
-        elif self.channel == 64:
-            self.channel = 36
-            return 36
-    
+        elif self.channel == Robohoc5.ch:
+            self.channel = Robohoc4.ch
+            self.ip_saddr = Robohoc4.s
+            self.ip_daddr = Robohoc4.d
+
         else:
-            self.channel 1
-            return 1
+            print "WARNING: "

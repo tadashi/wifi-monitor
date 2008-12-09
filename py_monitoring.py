@@ -1,5 +1,7 @@
 #! /Usr/bin/env python
 
+import os
+import re
 import sys
 import pcap
 import string
@@ -10,6 +12,7 @@ import getopt
 
 from framefilter import FrameFilter
 from config import Configure
+from netperf import Netperf
 
 snr_threshold = 0 # default
 
@@ -43,8 +46,8 @@ for opt, args in optlist:
       FILTER[DST] = False
 
 
-def set_interface(iface, channel):
-   cmd = "iwconfig %s channel %i" % (iface, channel)
+def set_interface(iface, channel, addr):
+   cmd = "iwconfig %s channel %i && ifconfig %s %s" % (iface, channel, iface, addr)
    
    os.system(cmd)
    print "----> DONE \" %s \"" % cmd
@@ -62,26 +65,34 @@ if __name__=='__main__':
     backup_iface_monitor = re.compile('1').sub('3', monitor_interface)
     print "interfaces", working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor
 
+
+    cf = Configure(working_iface_adhoc, backup_iface_adhoc)
+    ff = FrameFilter(cf.ether_addr, cf.channel, snr_threshold, FILTER)
+    p = pcap.pcapObject()
+    p.open_live(backup_iface_monitor, 96, 0, 100)
+
     try:
        while 1:
-          cf = Configure(working_iface_adhoc, backup_iface_adhoc)
-          ff = FrameFilter(cf.ether_addr, cf.channel, snr_threshold, FILTER)
-          
-          p = pcap.pcapObject()
-          p.open_live(backup_iface_monitor, 96, 0, 100)
-    
-          while ff.rx_frame < 1000:
+          while ff.rx_frame < 10: # Only beacon frames counted
              apply(ff.filter, p.next())
              #ff.print_rx_filter(monitor_interface)
              ff.print_tx_filter(working_iface_adhoc)
 
-          set_interface(backup_iface_adhoc, cf.next())
-          
-          print "Netperf Starts"
-          nf = Netperf()
-          nf.run('ping -s 1024 -c 100 -i 0.01 %s' % cf.ip_daddr)
-          print "Netperf Ends"
-                        
+          # Initialization
+          ff.rx_frame = 0 # RX frame count for next channel
+          cf.next() # Configuration for next channel
+          set_interface(backup_iface_adhoc, cf.channel, cf.ip_saddr) # Setup interface for next channel
+
+          # Algorithm 2
+          if ff.is_higher(cf.ip_daddr):
+             print "Netperf Starts"
+             nf = Netperf(cf.ip_daddr)
+             nf.run('ping -s 1024 -c 80 -i 0.01 %s > /dev/null' % cf.ip_daddr)
+             print "Netperf Ends"
+
+                    
+          #time.sleep(1)
+
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
        print 'Shutting down'

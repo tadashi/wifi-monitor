@@ -10,7 +10,6 @@ import getopt
 
 from average import WeightedAverage
 from linkquality import LinkQuality
-from netperf import Netperf
 
 ## Necesarry Filters
 SNR = 0
@@ -129,9 +128,25 @@ class FrameFilter(object):
         self.rate = 0
         self.rt = 0
 
+    def is_higher(self, addr):
+        if self.addr_lq[addr].snr.emavalue(0.8) > self.thr:
+            return True
+
+        else:
+            return False
+
+        
     def dump_hex(self, raw):
         return map(lambda x: '%.2x' % x, map(ord, raw))
 
+
+    def filter_beacon(self, bytes, key):
+        if bytes[key[SUBTYPE]] == '80':
+            return 1
+        
+        else:
+            #print "FRAME is NOT BEACON"
+            return 0
 
     def filter_data(self, bytes, key):
         if bytes[key[SUBTYPE]] == '08':
@@ -172,7 +187,7 @@ class FrameFilter(object):
     def push_snr(self, snr, addr):
         try:
             self.addr_lq[addr].snr.push(snr)
-            print "DEBUG [%s]: SNR = %i" % (addr, snr)
+            #print "DEBUG [%s]: SNR = %i" % (addr, snr)
 
         except KeyError:
             #print "[%s] is currently not registed yet." % addr
@@ -228,7 +243,7 @@ class FrameFilter(object):
         #print self.rate
         #print self.tx_frame
 
-        if not (self.tx_frame % 1000):
+        if not (self.tx_frame % 300):
             print "%s: monitoring TX frame [%u]" % (int, self.tx_frame)
             #print self.addr_lq
 
@@ -236,12 +251,11 @@ class FrameFilter(object):
                 #print self.addr_lq[daddr].snr.emavalue(0.8)
                 print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
 
-                if self.addr_lq[daddr].snr.emavalue(0.8) > self.thr: # Algorithm 1
+                if self.is_higher(daddr): # Algorithm 1
                     try:
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
-                        if self.addr_lq[daddr].refresh(): # print rtETX value in LinkQuality()
-            
-                        
+                        self.addr_lq[daddr].refresh() # print rtETX value in LinkQuality()
+
                     except KeyError:
                         print "[%s] is currently not registed yet." % daddr
                     
@@ -262,8 +276,8 @@ class FrameFilter(object):
         self.rx_frame += 1
         bytes = self.dump_hex(raw)
         
-        #if self.filter_data(bytes, RX):
-        if 1: # promiscous data type
+        if self.filter_beacon(bytes, RX):
+        #if 1: # promiscous data type 
             #if self.fil[DST]:  # When packets are sent to this node
             if 1:
                 self.filter_src_addr(bytes, self.my_addr, RX) # to get self.saddr
