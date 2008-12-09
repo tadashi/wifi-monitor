@@ -45,13 +45,16 @@ for opt, args in optlist:
    if opt in ("-d", "--dst-addr-filiter"):
       FILTER[DST] = False
 
+def set_interface(iface, cf):
+   if cf.ip_addr != cf.ip_saddr:
+      cmd = "iwconfig %s channel %i && ifconfig %s %s" % (iface, cf.channel, iface, cf.ip_saddr)
+      os.system(cmd)
+      print "----> DONE \" %s \"" % cmd
 
-def set_interface(iface, channel, addr):
-   cmd = "iwconfig %s channel %i && ifconfig %s %s" % (iface, channel, iface, addr)
-   
-   os.system(cmd)
-   print "----> DONE \" %s \"" % cmd
-
+   else:
+      cmd = "iwconfig %s channel %i" % (iface, cf.channel)
+      os.system(cmd)
+      print "----> DONE \" %s \"" % cmd
 
 if __name__=='__main__':
 
@@ -63,8 +66,7 @@ if __name__=='__main__':
     working_iface_monitor = re.compile('0').sub('2', adhoc_interface)
     backup_iface_adhoc = monitor_interface
     backup_iface_monitor = re.compile('1').sub('3', monitor_interface)
-    print "interfaces", working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor
-
+    print "Interfaces: ", working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor
 
     cf = Configure(working_iface_adhoc, backup_iface_adhoc)
     ff = FrameFilter(cf.ether_addr, cf.channel, snr_threshold, FILTER)
@@ -81,13 +83,13 @@ if __name__=='__main__':
           # Initialization
           ff.rx_frame = 0 # RX frame count for next channel
           cf.next() # Configuration for next channel
-          set_interface(backup_iface_adhoc, cf.channel, cf.ip_saddr) # Setup interface for next channel
+          set_interface(backup_iface_adhoc, cf) # Setup interface for next channel
 
           # Algorithm 2
-          if ff.is_higher(cf.):
+          if ff.is_higher(cf.ether_daddr):
              print "Netperf Starts"
              nf = Netperf(cf.ip_daddr)
-             nf.run('ping -s 1024 -c 80 -i 0.01 %s > /dev/null' % cf.ip_daddr)
+             nf.run('ping %s -s 1024 -c 80 -i 0.01 %s > /dev/null' % cf.ip_daddr)
              print "Netperf Ends"
 
                     
