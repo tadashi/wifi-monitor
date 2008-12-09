@@ -175,6 +175,7 @@ class FrameFilter(object):
 
     def filter_src_addr(self, bytes, addr, key):
         self.saddr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
+        #print "self.saddr", self.saddr
         if self.saddr in addr:
             return 1
 
@@ -184,6 +185,7 @@ class FrameFilter(object):
 
     def filter_dst_addr(self, bytes, addr, key):
         self.daddr = string.join(bytes[key[DST_ADDR]:key[DST_ADDR] + 6], ':')
+        #print "self.daddr", self.daddr
         if self.daddr in addr:
             return 1
 
@@ -223,7 +225,7 @@ class FrameFilter(object):
         self.regist_addr_lq(self.daddr)
 
         if self.rate not in DATARATE_11g:
-            print "DATARATE is UNKNOWN"
+            #print "DATARATE is UNKNOWN"
             return 0
         
         else:
@@ -234,8 +236,7 @@ class FrameFilter(object):
     def filter_retry_count(self, bytes, key):
         self.addr_lq[self.daddr].all += 1
         tmp_flag = int(bytes[key[RETRY_FLAG]], 16)
-
-        print "tmp_flag", tmp_flag, bytes[key[RETRY_FLAG]]
+        #print "tmp_flag", tmp_flag, bytes[key[RETRY_FLAG]]
         if tmp_flag & 0x08 == 8 or bytes[key[RETRY_FLAG]] == '01':
             self.addr_lq[self.daddr].retry += 1
             return 1
@@ -341,9 +342,8 @@ class FrameFilter(object):
                 if not self.filter_src_addr(bytes, self.my_addr, key):
                     return 0
                 
-            #if self.fil[DST]: # No need?
-            #    if not self.filter_dst_addr(bytes, self.daddr, key):
-            #        return 0
+            if not self.filter_dst_addr(bytes, self.daddr, key):
+                pass
 
             if self.filter_bitrate(bytes, key):
                 self.filter_retry_count(bytes, key)

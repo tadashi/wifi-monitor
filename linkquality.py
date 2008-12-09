@@ -68,7 +68,7 @@ class LinkQuality(object):
 
     def refresh(self):
         #if not (self.all % 1):
-        if self.all > 100:
+        if self.all > 1000:
             print "      rt etx  [%s]  : %.2f" % (self.addr, self.calculate())
             self.all = 0
             self.retry = 0

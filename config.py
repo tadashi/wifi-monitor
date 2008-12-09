@@ -68,7 +68,7 @@ class Configure(object):
         ether_addr = string.lower(re.search("HWaddr ([0-9a-fA-F:]+)", t).group(1))
         ip_addr =  re.search("inet addr:([0-9.]+)",t).group(1)
 
-        print "Monitoring Address : MAC[%s], IP[%s]" % (string.lower(ether_addr), string.lower(ip_addr))
+        print "Interface : MAC[%s], IP[%s]" % (string.lower(ether_addr), string.lower(ip_addr))
 
         return ip_addr, ether_addr
 

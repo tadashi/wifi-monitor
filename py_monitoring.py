@@ -46,8 +46,8 @@ for opt, args in optlist:
       FILTER[DST] = False
 
 def set_interface(iface, cf):
-   if cf.ip_addr != cf.ip_saddr:
-      cmd = "iwconfig %s channel %i && ifconfig %s %s" % (iface, cf.channel, iface, cf.ip_saddr)
+   if cf.ip_aaddr != cf.ip_saddr:
+      cmd = "iwconfig %s channel %i && ifconfig %s %s down up" % (iface, cf.channel, iface, cf.ip_saddr)
       os.system(cmd)
       print "----> DONE \" %s \"" % cmd
 
@@ -94,7 +94,7 @@ if __name__=='__main__':
              print "Netperf Ends"
 
                     
-          #time.sleep(1)
+          time.sleep(1)
 
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
