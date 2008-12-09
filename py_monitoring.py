@@ -63,10 +63,10 @@ if __name__=='__main__':
        sys.exit(0)
 
     working_iface_adhoc = adhoc_interface
-    working_iface_monitor = re.compile('0').sub('2', adhoc_interface)
+    working_iface_monitor = re.compile('[0-1]').sub('2', adhoc_interface)
     backup_iface_adhoc = monitor_interface
-    backup_iface_monitor = re.compile('1').sub('3', monitor_interface)
-    print "Interfaces: ", working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor
+    backup_iface_monitor = re.compile('[0-1]').sub('3', monitor_interface)
+    print "Interfaces: [wa: %s] [wm: %s] [ba: %s] [bm: %s]" % (working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor)
 
     cf = Configure(working_iface_adhoc, backup_iface_adhoc)
     ff = FrameFilter(cf.ether_addr, cf.channel, snr_threshold, FILTER)
@@ -77,7 +77,7 @@ if __name__=='__main__':
        while 1:
           while ff.rx_frame < 100: # Only beacon frames counted
              apply(ff.filter, p.next())
-             #ff.print_rx_filter(monitor_interface)
+             ff.print_rx_filter(backup_iface_monitor)
              ff.print_tx_filter(working_iface_adhoc)
 
           # Initialization

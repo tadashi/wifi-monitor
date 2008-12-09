@@ -121,6 +121,7 @@ class FrameFilter(object):
         #self.dst_addr = daddr
 
         # Variable Local Values
+        self.frame = 0
         self.rx_frame = 0
         self.tx_frame = 0
         #self.addr_snr = {}
@@ -148,10 +149,10 @@ class FrameFilter(object):
         return map(lambda x: '%.2x' % x, map(ord, raw))
 
     def filter_rt(self, bytes):
-        if bytes[key[LENGTH]] == '17':
+        if bytes[LENGTH] == '17':
             return TX
         
-        elif bytes[key[LENGTH]] == '1a':
+        elif bytes[LENGTH] == '1a':
             return RX
 
     def filter_beacon(self, bytes, key):
@@ -221,7 +222,7 @@ class FrameFilter(object):
         self.regist_addr_lq(self.daddr)
 
         if self.rate not in DATARATE_11g:
-            #print "DATARATE is UNKNOWN"
+            print "DATARATE is UNKNOWN"
             return 0
         
         else:
@@ -246,7 +247,7 @@ class FrameFilter(object):
         #print self.rate
         #print self.rx_frame
 
-        if not (self.rx_frame % 100):
+        if not (self.frame % 100):
             print "%s: monitoring RX frame [%u]" % (int, self.rx_frame)
             for saddr in self.addr_lq:
                 #print self.addr_lq[saddr].snr.emavalues
@@ -257,7 +258,7 @@ class FrameFilter(object):
         #print self.rate
         #print self.tx_frame
 
-        if not (self.tx_frame % 100):
+        if not (self.frame % 100):
             print "%s: monitoring TX frame [%u]" % (int, self.tx_frame)
             #print self.addr_lq
 
@@ -288,29 +289,26 @@ class FrameFilter(object):
     def filter_rx(self, bytes, key):
         """docstring for filter_rx"""
         #bytes = self.dump_hex(raw)
-        
+        self.rx_frame += 1        
+
         if self.filter_beacon(bytes, key): # Measure SNR from beacon frames
-            self.rx_frame += 1
         #if self.filter_data(bytes, key): # Measure SNR from data frames
         #if 1: # promiscous data type 
             #if self.fil[DST]:  # When packets are sent to this node
-            if 1:
-                self.filter_src_addr(bytes, self.my_addr, key) # to get self.saddr
-                self.filter_dst_addr(bytes, self.my_addr, key) # to get self.daddr
-                
+            self.filter_src_addr(bytes, self.my_addr, key) # to get self.saddr
+            self.filter_dst_addr(bytes, self.my_addr, key) # to get self.daddr
 
             #if self.fil[SNR]:
-            if 1:
-                if not self.filter_snr(bytes, key):
-                    return 0
-        
-            return 1
+            self.filter_snr(bytes, key):
+
+
 
 
     def filter_tx(self, bytes, key):
         """docstring for filter_tx"""
         #bytes = self.dump_hex(raw)
-        
+        self.tx_frame += 1        
+
         if self.filter_data(bytes, key):
             if self.fil[SRC]: # When packets are sent by this node
                 if not self.filter_src_addr(bytes, self.my_addr, key):
@@ -322,8 +320,7 @@ class FrameFilter(object):
 
             if self.filter_bitrate(bytes, key):
                 if self.filter_retry_count(bytes, key):
-                    self.tx_frame += 1
-        
+
             return 1
 
 ##
@@ -333,6 +330,7 @@ class FrameFilter(object):
         """docstring for filter"""
         bytes = self.dump_hex(raw)
         key = self.filter_rt(bytes)
+        self.frame += 1
 
         self.filter_rx(bytes, key)
         self.filter_tx(bytes, key)
