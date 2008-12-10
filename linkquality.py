@@ -12,6 +12,7 @@ class LinkQuality(object):
         super(LinkQuality, self).__init__()
 
         # TAG value
+        self.addr = addr
         self.lq = 1.0
 
         # Local values
@@ -21,44 +22,53 @@ class LinkQuality(object):
         self.all = 0
         self.rate = []
         self.rtetx = {}
+        self.rtetx2 = []
 
     def __repr__(self):
-        return "LinkQuality(lq=%f, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s)" % (self.lq, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx)
+        return "LinkQuality(addr=%f, lq=%f, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s, rtetx=%s)" % (self.addr, self.lq, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx, self.rtetx2)
     
     def __getitem__(self, idx):
         if idx == 0:
-            return self.lq
+            return self.addr
         if idx == 1:
-            return self.channel
+            return self.lq
         if idx == 2:
-            return self.snr
+            return self.channel
         if idx == 3:
+            return self.snr
+        if idx == 4:
             return self.retry
-        elif idx == 4:
-            return self.all
         elif idx == 5:
-            return self.rate
+            return self.all
         elif idx == 6:
+            return self.rate
+        elif idx == 7:
             return self.rtetx
+        elif idx == 8:
+            return self.rtetx2
 
     def __setitem__(self, idx, val):
         if idx == 0:
-            self.lq = val
+            self.addr = val
         if idx == 1:
-            self.channel = val
+            self.lq = val
         if idx == 2:
-            self.snr = val
+            self.channel = val
         if idx == 3:
+            self.snr = val
+        if idx == 4:
             self.retry = val
-        elif idx == 4:
-            self.all = val
         elif idx == 5:
-            self.rate = val
+            self.all = val
         elif idx == 6:
+            self.rate = val
+        elif idx == 7:
             self.rtetx = val
+        elif idx == 8:
+            self.rtetx2 = val
 
     def __len__(self):
-        return 7
+        return 9
 
     def calculate(self, timestamp, rtt):
         try:
@@ -68,6 +78,8 @@ class LinkQuality(object):
             self.rtetx[timestamp] = [ tmp_rtetx, rtt ]
             self.lq = tmp_rtetx
 
+            self.rtetx2.append([timestamp, tmp_rtetx])
+
             return tmp_rtetx
 
         except ZeroDivisionError:
@@ -76,8 +88,8 @@ class LinkQuality(object):
 
     def refresh(self, timestamp, rtt):
         #print "rtt", rtt
-        if self.all > 99: # 
-            print "      rtETX [%s]  : %.2f, rtt : %.2f" % (self.lq, self.calculate(timestamp, rtt), rtt)
+        if self.all > 200: # 
+            print "      rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(timestamp, rtt), rtt)
             self.all = 0
             self.retry = 0
 

@@ -255,7 +255,7 @@ class FrameFilter(object):
         #print self.rate
         #print self.rx_frame
 
-        if not (self.frame % 100):
+        if not (self.frame % 300):
             print "%s: monitoring RX frame [%u]" % (int, self.rx_frame)
             for saddr in self.addr_lq:
                 #print self.addr_lq[saddr].snr.emavalues
@@ -267,18 +267,21 @@ class FrameFilter(object):
         #print self.tx_frame
 
         if not (self.frame % 50):
+            print_stime = time.time()
+            print "print_tx_filter: loop starts %f" % print_stime
             print "%s: monitoring TX frame [%u]" % (int, self.tx_frame)
             #print self.addr_lq
 
             for daddr in self.addr_lq:
                 #print self.addr_lq[daddr].snr.emavalue(0.8)
-                print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
 
                 if self.is_higher(daddr): # Algorithm 1, but just for print purpose
                     try:
+                        print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
                         #nf = Netperf(self.cf.ip_daddr)
                         #tmp_ping_quality = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 10 -q %s' % (self.cf.ip_daddr), self.cf.ip_daddr)
+                        tmp_ping_quality = 0.0
                         self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
 
                     except KeyError:
@@ -291,6 +294,9 @@ class FrameFilter(object):
                             print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate.count(rate))
                         except KeyError:
                             print "[%s] is currently not registed yet." % daddr
+
+            print_etime = time.time()
+            print "print_tx_filter: loop ends %f in %f" % (print_stime, print_etime - print_stime)
 
 
 ##

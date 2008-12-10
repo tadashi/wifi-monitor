@@ -2,6 +2,7 @@
 
 import os
 import re
+import csv
 import sys
 import pcap
 import string
@@ -14,6 +15,7 @@ from framefilter import FrameFilter
 from config import Configure
 from netperf import Netperf
 
+runtime = 600
 ho_count = 0
 snr_threshold = 0 # default
 
@@ -46,6 +48,15 @@ for opt, args in optlist:
    if opt in ("-d", "--dst-addr-filiter"):
       FILTER[DST] = False
 
+def write_to_file(ff, ct):
+   filename = "%f.csv" % exp_start
+   writecsv = csv.writer(file(filename, 'w'), lineterminator='\n')
+
+   writecsv.writerow(["HO counts", ct])
+   for daddr in ff.addr_lq:
+      writecsv.writerow(["ROBOHOC [%s]" % daddr, ''])
+      writecsv.writerows(ff.addr_lq[daddr].rtetx2)
+
 def set_interface(iface, cf):
    if cf.ip_aaddr != cf.ip_saddr:
       cmd = "iwconfig %s channel %i && ifconfig %s %s down up" % (iface, cf.channel, iface, cf.ip_saddr)
@@ -58,7 +69,8 @@ def set_interface(iface, cf):
       print "----> DONE \" %s \"" % cmd
 
 if __name__=='__main__':
-
+   
+    exp_start = time.time()
     if len(sys.argv) < 2:
        print 'usage: sudo py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
        sys.exit(0)
@@ -76,16 +88,21 @@ if __name__=='__main__':
 
     try:
        while 1:
-          stime = time.clock()
-          print "loop starts", stime
           while ff.rx_frame < 101: # Only beacon frames counted
              apply(ff.filter, p.next())
-             #ff.print_rx_filter(backup_iface_monitor)
+             ff.print_rx_filter(backup_iface_monitor)
              ff.print_tx_filter(working_iface_adhoc) # maybe 1s
 
+          stime = time.time()
+          print "loop starts %f" % stime
+
           # Initialization
-          print "cf.ether_daddr", cf.ether_daddr
-          current_lq = ff.addr_lq[cf.ether_daddr].lq # rtetx of scanned neighbor host
+          try:
+             current_lq = ff.addr_lq[cf.ether_daddr].lq # rtetx of scanned neighbor host
+          except KeyError:
+             current_lq = 0.0
+             print "No Link Quality of [%s] is acquired" % cf.ether_daddr
+
           ff.rx_frame = 0 # RX frame count set 0 for next channel
           ff.tx_frame = 0 # TX frame count set 0 for next channel
           cf.next() # Configuration for next channel
@@ -94,8 +111,8 @@ if __name__=='__main__':
           # Algorithm 2
           if ff.is_higher(cf.ether_daddr):
              print "Netperf Starts "
-             #nf = Netperf(cf.ip_daddr)
-             #nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
+             nf = Netperf(cf.ip_daddr)
+             nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
              #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
              print "Netperf Ends"
 
@@ -107,10 +124,15 @@ if __name__=='__main__':
                 print "HANDOVER WILL BE CONDUCTED HERE"
 
           except KeyError:
-             print "FIRST TIME"
+             print "No Link Quality of [%s] is acquired" % cf.ether_daddr
 
-          etime = time.clock()
+          etime = time.time()
           print "loop ends %f in %f" % (etime, etime - stime)
+
+
+       if time.time() - exp_start > runtime:
+          write_to_file(ff, ho_count)
+          sys.exit(1)
 
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
@@ -120,7 +142,9 @@ if __name__=='__main__':
        print "ff.frame : %i [frame]" % ff.frame
        print "ff.rx_frame : %i [frame]" % ff.rx_frame
 
+       print "%i times of handover have conducted" % ho_count
+
        for daddr in ff.addr_lq:
           #print ff.addr_lq[daddr]
           print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx)
-          print "%i times of handover have conducted" % ho_count
+
