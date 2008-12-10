@@ -6,10 +6,8 @@ class WeightedAverage(object):
         self.values = []
         self.emavalues = []
         
-        for i in range(0, maxlen - 1):
+        for i in range(0, maxlen):
             self.values.append(default)
-
-        self.values.append(0)
 
     def push(self, new):
         """docstring for push"""

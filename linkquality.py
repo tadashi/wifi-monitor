@@ -71,11 +71,11 @@ class LinkQuality(object):
             return tmp_rtetx
 
         except ZeroDivisionError:
-            return 0.0        
+            return 1.0
 
 
     def refresh(self, timestamp, rtt):
-        print "rtt", rtt
+        #print "rtt", rtt
         if self.all > 99: # 
             print "      rtETX [%s]  : %.2f, rtt : %.2f" % (self.lq, self.calculate(timestamp, rtt), rtt)
             self.all = 0
