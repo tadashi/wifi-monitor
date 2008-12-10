@@ -14,6 +14,7 @@ from framefilter import FrameFilter
 from config import Configure
 from netperf import Netperf
 
+ho_count = 0
 snr_threshold = 0 # default
 
 SNR = 0
@@ -75,6 +76,8 @@ if __name__=='__main__':
 
     try:
        while 1:
+          stime = time.clock()
+          print "loop starts", stime
           while ff.rx_frame < 101: # Only beacon frames counted
              apply(ff.filter, p.next())
              #ff.print_rx_filter(backup_iface_monitor)
@@ -91,8 +94,8 @@ if __name__=='__main__':
           # Algorithm 2
           if ff.is_higher(cf.ether_daddr):
              print "Netperf Starts "
-             nf = Netperf(cf.ip_daddr)
-             nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
+             #nf = Netperf(cf.ip_daddr)
+             #nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
              #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
              print "Netperf Ends"
 
@@ -100,10 +103,14 @@ if __name__=='__main__':
              previous_lq = ff.addr_lq[cf.ether_daddr].lq
              print "cur %f, pre %f" % (current_lq, previous_lq)
              if current_lq + 0.1 < previous_lq: # previous rtetx of counterpart
+                ho_count += 1
                 print "HANDOVER WILL BE CONDUCTED HERE"
 
           except KeyError:
              print "FIRST TIME"
+
+          etime = time.clock()
+          print "loop ends %f in %f" % (etime, etime - stime)
 
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
@@ -116,3 +123,4 @@ if __name__=='__main__':
        for daddr in ff.addr_lq:
           #print ff.addr_lq[daddr]
           print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx)
+          print "%i times of handover have conducted" % ho_count
