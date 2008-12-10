@@ -91,9 +91,9 @@ if __name__=='__main__':
           # Algorithm 2
           if ff.is_higher(cf.ether_daddr):
              print "Netperf Starts "
-             #nf = Netperf(cf.ip_daddr)
-             #nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
-             nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
+             nf = Netperf(cf.ip_daddr)
+             nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
+             #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
              print "Netperf Ends"
 
           try:

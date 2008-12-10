@@ -12,7 +12,7 @@ class LinkQuality(object):
         super(LinkQuality, self).__init__()
 
         # TAG value
-        self.lq = 0.0
+        self.lq = 1.0
 
         # Local values
         self.channel = channel
