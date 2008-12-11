@@ -134,10 +134,10 @@ class Configure(object):
                 return Robohoc5_ath1.sip, Robohoc5_ath1.dip, Robohoc5_ath1.dether
 
         else:
-            print "WARNING: [%] No suc Robohoc registered" % self.ether_aaddr
+            print "WARNING: [%s] No suc Robohoc registered" % self.ether_aaddr
 
     def next(self):
-        if self.ether_aaddr == '00:80:92:3a:9c:c5': # Robohoc6
+        if self.ether_aaddr in ['00:80:92:3a:9c:c5', '00:80:92:3a:9c:ce']: # Robohoc6
             print "This is Robohoc6"
             if self.channel == Robohoc4_ath1.ch:
                 self.channel = Robohoc5_ath0.ch
@@ -153,7 +153,7 @@ class Configure(object):
                 self.ether_daddr = Robohoc4_ath1.dether
                 self.vip_daddr = Robohoc4_ath1.dcip
 
-        elif self.ether_aaddr == '00:80:92:3a:9c:d0': # Robohoc3
+        elif self.ether_aaddr in ['00:80:92:3a:9c:d0', '00:80:92:3a:9c:c6']: # Robohoc3
             print "This is Robohoc3"
             if self.channel == Robohoc5_ath1.ch:
                 self.channel = Robohoc4_ath0.ch
