@@ -41,10 +41,12 @@ FREQ_11a = {
     '5.825' : 165
     }
 
-# From the view point of Robooc6
-Robohoc4 = AP(40, '192.168.4.6', '192.168.4.4', '192.168.100.4', '00:80:92:3e:18:11')
-Robohoc5 = AP(60, '192.168.6.6', '192.168.6.5', '192.168.100.5', '00:80:92:3d:45:df')
-Robohoc = [ Robohoc4, Robohoc5 ]
+# Static info of nodes
+Robohoc4_ath0 = AP(6, '192.168.3.3', '192.168.3.4', '192.168.100.4', '00:80:92:3e:7d:58')  # for Robohoc3
+Robohoc4_ath1 = AP(40, '192.168.4.6', '192.168.4.4', '192.168.100.4', '00:80:92:3e:18:11') # for Robohoc6
+
+Robohoc5_ath0 = AP(60, '192.168.6.6', '192.168.6.5', '192.168.100.5', '00:80:92:3d:45:df') # for Robohoc6
+Robohoc5_ath1 = AP(11, '192.168.5.3', '192.168.5.5', '192.168.100.5', '00:80:92:3e:18:16') # for Robohoc3
 
 class Configure(object):
     def __init__(self, aiface, miface):
@@ -55,8 +57,8 @@ class Configure(object):
 
         # Monitor interface
         self.ip_maddr, self.ether_maddr = self.info_addr(miface)
-        self.channel = self.get_channel(miface)
-        self.ip_saddr, self.ip_daddr, self.ether_daddr = self.get_addr(self.channel) # Static info
+        self.channel = self.info_channel(miface)
+        self.ip_saddr, self.ip_daddr, self.ether_daddr = self.get_addr(self.channel) # Static info of nodes
         
         # Overlay interface
         self.vip_daddr = ''
@@ -74,7 +76,7 @@ class Configure(object):
 
         return ip_addr, ether_addr
 
-    def get_channel(self, int):
+    def info_channel(self, int):
         p = os.popen("/sbin/iwconfig %s" % int)
         t = p.read()
         p.close()
@@ -87,29 +89,53 @@ class Configure(object):
         return channel
 
     def get_addr(self, channel):
-        if channel == Robohoc4.ch:
-            return Robohoc4.sip, Robohoc4.dip, Robohoc4.dether
+        if self.ether_aaddr = '00:80:92:3a:9c:c5': # Robohoc6
+            if channel == Robohoc4_ath1.ch:
+                return Robohoc4_ath1.sip, Robohoc4_ath1.dip, Robohoc4_ath1.dether
+            elif channel == Robohoc5_ath0.ch:
+                return Robohoc5_ath0.sip, Robohoc5_ath0.dip, Robohoc5_ath0.dether
 
-        elif channel == Robohoc5.ch:
-            return Robohoc5.sip, Robohoc5.dip, Robohoc5.dether
+        elif self.ether_aaddr = '00:80:92:3a:9c:d0': # Robohoc3
+            if channel == Robohoc4_ath0.ch:
+                return Robohoc4_ath0.sip, Robohoc4_ath0.dip, Robohoc4_ath0.dether
+            elif channel == Robohoc5_ath1.ch:
+                return Robohoc5_ath1.sip, Robohoc5_ath1.dip, Robohoc5_ath1.dether
 
         else:
-            print "WARNING: "
+            print "WARNING: [%] No suc Robohoc registered" % self.ether_aaddr
 
     def next(self):
-        if self.channel == Robohoc4.ch:
-            self.channel = Robohoc5.ch
-            self.ip_saddr = Robohoc5.sip
-            self.ip_daddr = Robohoc5.dip
-            self.ether_daddr = Robohoc5.dether
-            self.vip_daddr = Robohoc5.dcip
+        if self.ether_aaddr = '00:80:92:3a:9c:c5': # Robohoc6
+            print "This is Robohoc6"
+            if self.channel == Robohoc4_ath1.ch:
+                self.channel = Robohoc5_ath0.ch
+                self.ip_saddr = Robohoc5_ath0.sip
+                self.ip_daddr = Robohoc5_ath0.dip
+                self.ether_daddr = Robohoc5_ath0.dether
+                self.vip_daddr = Robohoc5_ath0.dcip
 
-        elif self.channel == Robohoc5.ch:
-            self.channel = Robohoc4.ch
-            self.ip_saddr = Robohoc4.sip
-            self.ip_daddr = Robohoc4.dip
-            self.ether_daddr = Robohoc4.dether
-            self.vip_daddr = Robohoc4.dcip
+            elif self.channel == Robohoc5_ath0.ch:
+                self.channel = Robohoc4_ath1.ch
+                self.ip_saddr = Robohoc4_ath1.sip
+                self.ip_daddr = Robohoc4_ath1.dip
+                self.ether_daddr = Robohoc4_ath1.dether
+                self.vip_daddr = Robohoc4_ath1.dcip
+
+        elif self.ether_aaddr = '00:80:92:3a:9c:d0': # Robohoc3
+            print "This is Robohoc3"
+            if self.channel == Robohoc5_ath1.ch:
+                self.channel = Robohoc4_ath0.ch
+                self.ip_saddr = Robohoc4_ath0.sip
+                self.ip_daddr = Robohoc4_ath0.dip
+                self.ether_daddr = Robohoc4_ath0.dether
+                self.vip_daddr = Robohoc4_ath0.dcip
+
+            elif self.channel == Robohoc4_ath0.ch:
+                self.channel = Robohoc5_ath1.ch
+                self.ip_saddr = Robohoc5_ath1.sip
+                self.ip_daddr = Robohoc5_ath1.dip
+                self.ether_daddr = Robohoc5_ath1.dether
+                self.vip_daddr = Robohoc5_ath1.dcip
 
         else:
             print "WARNING: "

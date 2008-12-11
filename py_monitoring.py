@@ -71,6 +71,7 @@ def set_interface(iface, cf):
 if __name__=='__main__':
    
     exp_start = time.time()
+
     if len(sys.argv) < 2:
        print 'usage: sudo py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
        sys.exit(0)
@@ -100,7 +101,7 @@ if __name__=='__main__':
           try:
              current_lq = ff.addr_lq[cf.ether_daddr].lq # rtetx of scanned neighbor host
           except KeyError:
-             current_lq = 0.0
+             current_lq = 10.0
              print "No Link Quality of [%s] is acquired" % cf.ether_daddr
 
           ff.rx_frame = 0 # RX frame count set 0 for next channel
@@ -130,9 +131,9 @@ if __name__=='__main__':
           print "loop ends %f in %f" % (etime, etime - stime)
 
 
-       if time.time() - exp_start > runtime:
-          write_to_file(ff, ho_count)
-          sys.exit(1)
+          if ( time.time() - exp_start ) > runtime:
+             write_to_file(ff, ho_count)
+             sys.exit(1)
 
     except KeyboardInterrupt:
        print '%s' % sys.exc_type
@@ -143,6 +144,8 @@ if __name__=='__main__':
        print "ff.rx_frame : %i [frame]" % ff.rx_frame
 
        print "%i times of handover have conducted" % ho_count
+
+       print "%f [second] left for end..." % ( runtime - (time.time() - exp_start ))
 
        for daddr in ff.addr_lq:
           #print ff.addr_lq[daddr]

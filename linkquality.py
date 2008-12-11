@@ -13,7 +13,7 @@ class LinkQuality(object):
 
         # TAG value
         self.addr = addr
-        self.lq = 1.0
+        self.lq = 10.0
 
         # Local values
         self.channel = channel
@@ -25,7 +25,7 @@ class LinkQuality(object):
         self.rtetx2 = []
 
     def __repr__(self):
-        return "LinkQuality(addr=%f, lq=%f, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s, rtetx=%s)" % (self.addr, self.lq, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx, self.rtetx2)
+        return "LinkQuality(addr=%s, lq=%f, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s, rtetx=%s)" % (self.addr, self.lq, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx, self.rtetx2)
     
     def __getitem__(self, idx):
         if idx == 0:
