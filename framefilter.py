@@ -239,7 +239,7 @@ class FrameFilter(object):
 
     def filter_retry_count(self, bytes, key):
         self.addr_lq[self.daddr].all += 1
-        print "self.LQ.all", self.addr_lq[self.daddr].all
+        #print "self.LQ.all", self.addr_lq[self.daddr].all
         tmp_flag = int(bytes[key[RETRY_FLAG]], 16)
         #print "tmp_flag", tmp_flag, bytes[key[RETRY_FLAG]]
         if tmp_flag & 0x08 == 8 or bytes[key[RETRY_FLAG]] == '01':

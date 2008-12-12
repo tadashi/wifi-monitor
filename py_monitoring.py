@@ -148,6 +148,8 @@ if __name__=='__main__':
        print 'Shutting down'
        print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
 
+       write_to_file(ff, ho_count)
+
        print "ALL frames (=ff.frame) : %i [frame]" % ff.frame
        print "RX Beacon frames (=ff.rx_frame) : %i [frame]" % ff.rx_frame
        print "Data frames (=ff.rx_frame) : %i [frame]" % ff.rx_frame
