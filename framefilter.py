@@ -138,6 +138,7 @@ class FrameFilter(object):
         self.rt = 0
 
     def is_higher(self, addr):
+        print "Current EMA SNR %.2f : Threshold SNR %i" % (self.addr_lq[addr].snr.emavalue(0.8), self.thr)
         try:
             if self.addr_lq[addr].snr.emavalue(0.8) > self.thr:
                 return True
@@ -238,6 +239,7 @@ class FrameFilter(object):
 
     def filter_retry_count(self, bytes, key):
         self.addr_lq[self.daddr].all += 1
+        print "self.LQ.all", self.addr_lq[self.daddr].all
         tmp_flag = int(bytes[key[RETRY_FLAG]], 16)
         #print "tmp_flag", tmp_flag, bytes[key[RETRY_FLAG]]
         if tmp_flag & 0x08 == 8 or bytes[key[RETRY_FLAG]] == '01':
@@ -256,7 +258,7 @@ class FrameFilter(object):
         #print self.rx_frame
 
         if not (self.frame % 300):
-            print "%s: monitoring RX frame [%u]" % (int, self.rx_frame)
+            print "%s: monitoring RX Beacon frame [%u]" % (int, self.rx_frame)
             for saddr in self.addr_lq:
                 #print self.addr_lq[saddr].snr.emavalues
                 #print self.addr_lq[saddr].snr.values
@@ -267,9 +269,9 @@ class FrameFilter(object):
         #print self.tx_frame
 
         if not (self.frame % 50):
-            print_stime = time.time()
-            print "print_tx_filter: loop starts %f" % print_stime
-            print "%s: monitoring TX frame [%u]" % (int, self.tx_frame)
+            #print_stime = time.time()
+            #print "print_tx_filter: loop starts %f" % print_stime
+            #print "%s: monitoring Data frames [%u]" % (int, self.tx_frame)
             #print self.addr_lq
 
             for daddr in self.addr_lq:
@@ -281,8 +283,8 @@ class FrameFilter(object):
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
                         #nf = Netperf(self.cf.ip_daddr)
                         #tmp_ping_quality = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 10 -q %s' % (self.cf.ip_daddr), self.cf.ip_daddr)
-                        tmp_ping_quality = 0.0
-                        self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
+                        #tmp_ping_quality = 0.0
+                        #self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
 
                     except KeyError:
                         print "[%s] is currently not registed yet." % daddr
@@ -295,9 +297,13 @@ class FrameFilter(object):
                         except KeyError:
                             print "[%s] is currently not registed yet." % daddr
 
-            print_etime = time.time()
-            print "print_tx_filter: loop ends %f in %f" % (print_stime, print_etime - print_stime)
+            #print_etime = time.time()
+            #print "print_tx_filter: loop ends %f in %f" % (print_stime, print_etime - print_stime)
 
+        ## for experimentation 200812111900
+        for addr in self.addr_lq:
+            tmp_ping_quality = 0.0
+            self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
 
 ##
 # Main Functions: RX filter & TX filter
@@ -340,16 +346,17 @@ class FrameFilter(object):
 
     def filter_rxtx(self, bytes, key):
         """docstring for filter_rt"""
-        self.rx_frame += 1        
-        self.tx_frame += 1        
 
         if self.filter_beacon(bytes, key): # Measure SNR from beacon frames
+            self.rx_frame += 1
+
             self.filter_src_addr(bytes, [], key) # to get self.saddr
-            self.filter_dst_addr(bytes, self.my_addr, key) # to get self.daddr
+            self.filter_dst_addr(bytes, [], key) # to get self.daddr
             self.filter_snr(bytes, key)
 
         elif self.filter_data(bytes, key):
-            if self.fil[SRC]: # When packets are sent by this node
+            self.tx_frame += 1        
+            if self.fil[SRC]: # When packets are sent by this node (either adhoc int. or monitor int.)
                 if not self.filter_src_addr(bytes, self.my_addr, key):
                     return 0
                 
@@ -357,7 +364,7 @@ class FrameFilter(object):
                 pass
 
             if self.filter_bitrate(bytes, key):
-                self.filter_retry_count(bytes, key)
+                self.filter_retry_count(bytes, key) # in retry_count add lq.all++
 
 ##
 # Callable Function

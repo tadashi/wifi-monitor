@@ -88,7 +88,7 @@ class LinkQuality(object):
 
     def refresh(self, timestamp, rtt):
         #print "rtt", rtt
-        if self.all > 200: # 
+        if self.all > 200: # Data frames = same as ff.tx_frame
             print "      rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(timestamp, rtt), rtt)
             self.all = 0
             self.retry = 0

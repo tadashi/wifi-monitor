@@ -121,13 +121,13 @@ class Configure(object):
         return channel
 
     def get_addr(self, channel):
-        if self.ether_aaddr == '00:80:92:3a:9c:c5': # Robohoc6
+        if self.ether_aaddr in ['00:80:92:3a:9c:c5', '00:80:92:3a:9c:ce']: # Robohoc6
             if channel == Robohoc4_ath1.ch:
                 return Robohoc4_ath1.sip, Robohoc4_ath1.dip, Robohoc4_ath1.dether
             elif channel == Robohoc5_ath0.ch:
                 return Robohoc5_ath0.sip, Robohoc5_ath0.dip, Robohoc5_ath0.dether
 
-        elif self.ether_aaddr == '00:80:92:3a:9c:d0': # Robohoc3
+        elif self.ether_aaddr in  ['00:80:92:3a:9c:d0', '00:80:92:3a:9c:c6']: # Robohoc3
             if channel == Robohoc4_ath0.ch:
                 return Robohoc4_ath0.sip, Robohoc4_ath0.dip, Robohoc4_ath0.dether
             elif channel == Robohoc5_ath1.ch:

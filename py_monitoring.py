@@ -77,9 +77,17 @@ if __name__=='__main__':
        sys.exit(0)
 
     working_iface_adhoc = adhoc_interface
-    working_iface_monitor = re.compile('[0-1]').sub('2', adhoc_interface)
     backup_iface_adhoc = monitor_interface
-    backup_iface_monitor = re.compile('[0-1]').sub('3', monitor_interface)
+    if adhoc_interface == "ath0" and monitor_interface == "ath1":
+       working_iface_monitor = re.compile('[0]').sub('2', adhoc_interface)
+       backup_iface_monitor = re.compile('[1]').sub('3', monitor_interface)
+    elif adhoc_interface == "ath1" and monitor_interface == "ath0":
+       working_iface_monitor = re.compile('[1]').sub('3', adhoc_interface)
+       backup_iface_monitor = re.compile('[0]').sub('2', monitor_interface)
+    else:
+       print "Please specify [ath0, ath1] for each interface. "
+       sys.exit(0)
+       
     print "Interfaces: [wa: %s] [wm: %s] [ba: %s] [bm: %s]" % (working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor)
 
     cf = Configure(working_iface_adhoc, backup_iface_adhoc)
@@ -89,9 +97,9 @@ if __name__=='__main__':
 
     try:
        while 1:
-          while ff.rx_frame < 101: # Only beacon frames counted
+          while ff.rx_frame < 101: # Approx. 100ms * 100 = 10s ; Only beacon frames counted
              apply(ff.filter, p.next())
-             ff.print_rx_filter(backup_iface_monitor)
+             #ff.print_rx_filter(backup_iface_monitor)
              ff.print_tx_filter(working_iface_adhoc) # maybe 1s
 
           stime = time.time()
@@ -140,14 +148,14 @@ if __name__=='__main__':
        print 'Shutting down'
        print '%d packets received, %d packets dropped, %d packets dropped by interface' % p.stats()
 
-       print "ff.frame : %i [frame]" % ff.frame
-       print "ff.rx_frame : %i [frame]" % ff.rx_frame
+       print "ALL frames (=ff.frame) : %i [frame]" % ff.frame
+       print "RX Beacon frames (=ff.rx_frame) : %i [frame]" % ff.rx_frame
+       print "Data frames (=ff.rx_frame) : %i [frame]" % ff.rx_frame
 
        print "%i times of handover have conducted" % ho_count
 
        print "%f [second] left for end..." % ( runtime - (time.time() - exp_start ))
 
        for daddr in ff.addr_lq:
-          #print ff.addr_lq[daddr]
-          print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx)
+          print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx2)
 
