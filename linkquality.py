@@ -23,9 +23,10 @@ class LinkQuality(object):
         self.rate = []
         self.rtetx = {}
         self.rtetx2 = []
+        self.emasnr = []
 
     def __repr__(self):
-        return "LinkQuality(addr=%s, lq=%f, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s, rtetx=%s)" % (self.addr, self.lq, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx, self.rtetx2)
+        return "LinkQuality(addr=%s, lq=%f, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s)" % (self.addr, self.lq, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx)
     
     def __getitem__(self, idx):
         if idx == 0:
@@ -44,8 +45,6 @@ class LinkQuality(object):
             return self.rate
         elif idx == 7:
             return self.rtetx
-        elif idx == 8:
-            return self.rtetx2
 
     def __setitem__(self, idx, val):
         if idx == 0:
@@ -64,21 +63,21 @@ class LinkQuality(object):
             self.rate = val
         elif idx == 7:
             self.rtetx = val
-        elif idx == 8:
-            self.rtetx2 = val
 
     def __len__(self):
-        return 9
+        return 8
 
-    def calculate(self, timestamp, rtt):
+    def calculate(self, emasnr, timestamp, rtt):
         try:
-            tx_loss = float(self.retry) / self.all
+            tx_loss = float(self.retry) / float(self.all)
             tmp_rtetx = 1.0 / ( 1.0 - tx_loss )
 
             self.rtetx[timestamp] = [ tmp_rtetx, rtt ]
             self.lq = tmp_rtetx
 
+            self.emasnr.append([timestamp, emasnr])
             self.rtetx2.append([timestamp, tmp_rtetx])
+
 
             return tmp_rtetx
 
@@ -86,10 +85,10 @@ class LinkQuality(object):
             return 1.0
 
 
-    def refresh(self, timestamp, rtt):
+    def refresh(self, emasnr, timestamp, rtt):
         #print "rtt", rtt
         if self.all > 200: # Data frames = same as ff.tx_frame
-            print "      rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(timestamp, rtt), rtt)
+            print "rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(emansnr, timestamp, rtt), rtt)
             self.all = 0
             self.retry = 0
 

@@ -54,7 +54,10 @@ def write_to_file(ff, ct):
 
    writecsv.writerow(["HO counts", ct])
    for daddr in ff.addr_lq:
-      writecsv.writerow(["ROBOHOC [%s]" % daddr, ''])
+      writecsv.writerow(["ROBOHOC [%s] EMA SNR" % daddr, ''])
+      writecsv.writerows(ff.addr_lq[daddr].emasnr)
+
+      writecsv.writerow(["rtETX", ''])
       writecsv.writerows(ff.addr_lq[daddr].rtetx2)
 
 def set_interface(iface, cf):
@@ -119,11 +122,13 @@ if __name__=='__main__':
 
           # Algorithm 2
           if ff.is_higher(cf.ether_daddr):
-             print "Netperf Starts "
-             nf = Netperf(cf.ip_daddr)
-             nf.run('ping', '-q -s 1024 -c 100 -i 0.01 %s > /dev/null' % cf.ip_daddr)
-             #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # 0s
-             print "Netperf Ends"
+             if cf.ip_aaddr != cf.ip_saddr:
+                print "Netperf Starts "
+                nf = Netperf(cf.ip_daddr)
+                nf.run('ping', '-q -s 1024 -c 2000 -i 0.01 %s > /dev/null' % cf.ip_daddr) # 200812121800
+                #nf.run('ping', '-q -s 1024 -c 500 -i 0.01 %s > /dev/null' % cf.ip_daddr) # 200812121703
+                #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # not yet tested
+                print "Netperf Ends"
 
           try:
              previous_lq = ff.addr_lq[cf.ether_daddr].lq
@@ -152,7 +157,7 @@ if __name__=='__main__':
 
        print "ALL frames (=ff.frame) : %i [frame]" % ff.frame
        print "RX Beacon frames (=ff.rx_frame) : %i [frame]" % ff.rx_frame
-       print "Data frames (=ff.rx_frame) : %i [frame]" % ff.rx_frame
+       print "Data frames (=ff.tx_frame) : %i [frame]" % ff.tx_frame
 
        print "%i times of handover have conducted" % ho_count
 

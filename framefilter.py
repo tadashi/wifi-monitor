@@ -138,8 +138,8 @@ class FrameFilter(object):
         self.rt = 0
 
     def is_higher(self, addr):
-        print "Current EMA SNR %.2f : Threshold SNR %i" % (self.addr_lq[addr].snr.emavalue(0.8), self.thr)
         try:
+            print "Current EMA SNR %.2f : Threshold SNR %i" % (self.addr_lq[addr].snr.emavalue(0.8), self.thr)
             if self.addr_lq[addr].snr.emavalue(0.8) > self.thr:
                 return True
 
@@ -268,7 +268,7 @@ class FrameFilter(object):
         #print self.rate
         #print self.tx_frame
 
-        if not (self.frame % 50):
+        if not (self.frame % 1000):
             #print_stime = time.time()
             #print "print_tx_filter: loop starts %f" % print_stime
             #print "%s: monitoring Data frames [%u]" % (int, self.tx_frame)
@@ -301,9 +301,9 @@ class FrameFilter(object):
             #print "print_tx_filter: loop ends %f in %f" % (print_stime, print_etime - print_stime)
 
         ## for experimentation 200812111900
-        for addr in self.addr_lq:
+        for daddr in self.addr_lq:
             tmp_ping_quality = 0.0
-            self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
+            self.addr_lq[daddr].refresh(self.addr_lq[daddr].snr.emavalue(0.8), self.timestamp, tmp_ping_quality) # print rtETX
 
 ##
 # Main Functions: RX filter & TX filter
