@@ -23,7 +23,6 @@ class LinkQuality(object):
         self.rate = []
         self.rtetx = {}
         self.rtetx2 = []
-        self.emasnr = []
 
     def __repr__(self):
         return "LinkQuality(addr=%s, lq=%f, channel=%i, snr=%f, retry=%u, all=%u, rate=%s, rtetx=%s)" % (self.addr, self.lq, self.channel, self.snr.emavalue(0.8), self.retry, self.all, self.rate, self.rtetx)
@@ -75,9 +74,7 @@ class LinkQuality(object):
             self.rtetx[timestamp] = [ tmp_rtetx, rtt ]
             self.lq = tmp_rtetx
 
-            self.emasnr.append([timestamp, emasnr])
-            self.rtetx2.append([timestamp, tmp_rtetx])
-
+            self.rtetx2.append([timestamp, tmp_rtetx, emasnr])
 
             return tmp_rtetx
 
@@ -88,7 +85,7 @@ class LinkQuality(object):
     def refresh(self, emasnr, timestamp, rtt):
         #print "rtt", rtt
         if self.all > 200: # Data frames = same as ff.tx_frame
-            print "rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(emansnr, timestamp, rtt), rtt)
+            print "rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(emasnr, timestamp, rtt), rtt)
             self.all = 0
             self.retry = 0
 
