@@ -118,7 +118,7 @@ class FrameFilter(object):
         self.cf = cf
         self.fil = ft
         self.thr = th
-        self.my_addr = [ cf.ether_aaddr, cf.ether_maddr ]
+        self.my_addr = [ cf.ether_aaddr, cf.ether_maddr ] # both ath0 and ath1
         self.channel = cf.channel
         #self.dst_addr = daddr
 
@@ -215,7 +215,6 @@ class FrameFilter(object):
             #print "[%s] is currently not registed yet." % addr
             pass
 
-
     def regist_addr_lq(self, addr):
         if not self.addr_lq.has_key(addr) and len(addr) == 17: # First time
             self.addr_lq[addr] = LinkQuality(addr, self.thr, self.channel)
@@ -233,7 +232,13 @@ class FrameFilter(object):
             return 0
         
         else:
-            self.addr_lq[self.daddr].rate.append(self.rate)
+            #self.addr_lq[self.daddr].rate.append(self.rate)
+            try:
+                self.addr_lq[self.daddr].rate[rate] += 1
+            except KeyError:
+                print "First time bitrate added."
+                self.addr_lq[self.daddr].rate[rate] = 0
+
             return 1
 
 
@@ -293,7 +298,7 @@ class FrameFilter(object):
                     print "      8 available bit-rates[%s]:" % daddr
                     for rate in DATARATE_11a:
                         try:
-                            print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate.count(rate))
+                            print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate[rate])
                         except KeyError:
                             print "[%s] is currently not registed yet." % daddr
 
@@ -352,7 +357,7 @@ class FrameFilter(object):
 
             self.filter_src_addr(bytes, [], key) # to get self.saddr
             self.filter_dst_addr(bytes, [], key) # to get self.daddr
-            self.filter_snr(bytes, key)
+            self.filter_snr(bytes, key) # to get SNR and register hosts
 
         elif self.filter_data(bytes, key):
             self.tx_frame += 1        
@@ -361,10 +366,10 @@ class FrameFilter(object):
                     return 0
                 
             if not self.filter_dst_addr(bytes, self.daddr, key):
-                pass
+                pass # Do nothing
 
             if self.filter_bitrate(bytes, key):
-                self.filter_retry_count(bytes, key) # in retry_count add lq.all++
+                self.filter_retry_count(bytes, key) # in retry_count add lq.all++ (and lq.retry++ in case)
 
 ##
 # Callable Function

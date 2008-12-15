@@ -20,7 +20,7 @@ class LinkQuality(object):
         self.snr = WeightedAverage(100, min) # min = snr_threshold
         self.retry = 0
         self.all = 0
-        self.rate = []
+        self.rate = {}
         self.rtetx = {}
         self.rtetx2 = []
 
