@@ -119,7 +119,7 @@ class FrameFilter(object):
         self.fil = ft
         self.thr = th
         self.my_addr = [ cf.ether_aaddr, cf.ether_maddr ] # both ath0 and ath1
-        print "init................... [%s]" % self.my_addr
+        #print "init................... [%s]" % self.my_addr
         self.channel = cf.channel
         #self.dst_addr = daddr
 
@@ -162,6 +162,8 @@ class FrameFilter(object):
             return RX
 
     def filter_beacon(self, bytes, key):
+        #print "key[SUBTYPE]", key[SUBTYPE}
+        #print "filter_beacon %s " % bytes[key[SUBTYPE]]
         if bytes[key[SUBTYPE]] == '80':
             return 1
         
@@ -180,7 +182,7 @@ class FrameFilter(object):
 
     def filter_src_addr(self, bytes, addr, key):
         self.saddr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
-        print "self.saddr", self.saddr
+        #print "self.saddr", self.saddr
         if self.saddr in addr:
             return 1
 
@@ -246,6 +248,7 @@ class FrameFilter(object):
     def filter_retry_count(self, bytes, key):
         self.addr_lq[self.daddr].all += 1
         #print "self.LQ.all", self.addr_lq[self.daddr].all
+
         tmp_flag = int(bytes[key[RETRY_FLAG]], 16)
         #print "tmp_flag", tmp_flag, bytes[key[RETRY_FLAG]]
         if tmp_flag & 0x08 == 8 or bytes[key[RETRY_FLAG]] == '01':
@@ -353,10 +356,10 @@ class FrameFilter(object):
 
     def filter_rxtx(self, bytes, key):
         """docstring for filter_rt"""
-        print "\n"
+        #print "\n"
 
         if self.filter_beacon(bytes, key): # Measure SNR from beacon frames
-            print "RRRRRRR"
+            #print "RRRRRRR"
             self.rx_frame += 1
 
             self.filter_src_addr(bytes, [], key) # to get self.saddr
@@ -369,20 +372,19 @@ class FrameFilter(object):
             self.tx_frame += 1        
             if self.fil[SRC]: # When packets are sent by this node (either adhoc int. or monitor int.)
                 if not self.filter_src_addr(bytes, self.my_addr, key):
-                    print "XXXXXXX"
+                    #print "XXXXXXX"
                     return 0
                 
-            if not self.filter_dst_addr(bytes, self.daddr, key):
-                pass # Do nothing
+            self.filter_dst_addr(bytes, self.daddr, key) # to get self.daddr
 
             if self.filter_bitrate(bytes, key):
-                print "YYYYYYYY"
+                #print "YYYYYYYY"
                 self.filter_retry_count(bytes, key) # in retry_count add lq.all++ (and lq.retry++ in case)
                 return 1
 
 
         else:
-            print "ZZZZZZZZ"
+            #print "ZZZZZZZZ"
             return 0
 
 ##

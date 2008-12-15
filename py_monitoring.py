@@ -59,7 +59,7 @@ def write_to_file(ff, ct):
 
 def set_interface(iface, cf):
    if cf.ip_aaddr != cf.ip_saddr:
-      cmd = "iwconfig %s channel %i && ifconfig %s %s down up" % (iface, cf.channel, iface, cf.ip_saddr)
+      cmd = "iwconfig %s channel %i" % (iface, cf.channel)
       os.system(cmd)
       print "----> DONE \" %s \"" % cmd
 
@@ -122,7 +122,7 @@ if __name__=='__main__':
              if cf.ip_aaddr != cf.ip_saddr:
                 print "Netperf Starts "
                 nf = Netperf(cf.ip_daddr)
-                nf.run('ping', '-q -s 1024 -c 2000 -i 0.01 %s > /dev/null' % cf.ip_daddr) # since 200812121800
+                nf.run('ping', '-q -s 1024 -c 500 -i 0.01 %s > /dev/null' % cf.ip_daddr) # since 200812121800
                 #nf.run('ping', '-q -s 1024 -c 500 -i 0.01 %s > /dev/null' % cf.ip_daddr) # since 200812121703
                 #nf.run('netperf', '-l 1 -H %s > /dev/null' % cf.ip_daddr) # not yet tested
                 print "Netperf Ends"
