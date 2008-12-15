@@ -119,6 +119,7 @@ class FrameFilter(object):
         self.fil = ft
         self.thr = th
         self.my_addr = [ cf.ether_aaddr, cf.ether_maddr ] # both ath0 and ath1
+        print "init................... [%s]" % self.my_addr
         self.channel = cf.channel
         #self.dst_addr = daddr
 
@@ -179,7 +180,7 @@ class FrameFilter(object):
 
     def filter_src_addr(self, bytes, addr, key):
         self.saddr = string.join(bytes[key[SRC_ADDR]:key[SRC_ADDR] + 6], ':')
-        #print "self.saddr", self.saddr
+        print "self.saddr", self.saddr
         if self.saddr in addr:
             return 1
 
@@ -234,10 +235,10 @@ class FrameFilter(object):
         else:
             #self.addr_lq[self.daddr].rate.append(self.rate)
             try:
-                self.addr_lq[self.daddr].rate[rate] += 1
+                self.addr_lq[self.daddr].rate[self.rate] += 1
             except KeyError:
                 print "First time bitrate added."
-                self.addr_lq[self.daddr].rate[rate] = 0
+                self.addr_lq[self.daddr].rate[self.rate] = 1
 
             return 1
 
@@ -300,7 +301,8 @@ class FrameFilter(object):
                         try:
                             print "            %.1f Mb/s  : %i" % (rate, self.addr_lq[daddr].rate[rate])
                         except KeyError:
-                            print "[%s] is currently not registed yet." % daddr
+                            print "            %.1f Mb/s  : 0" % rate
+                            #print "[%s] is currently not registed yet." % daddr
 
             #print_etime = time.time()
             #print "print_tx_filter: loop ends %f in %f" % (print_stime, print_etime - print_stime)
@@ -351,25 +353,37 @@ class FrameFilter(object):
 
     def filter_rxtx(self, bytes, key):
         """docstring for filter_rt"""
+        print "\n"
 
         if self.filter_beacon(bytes, key): # Measure SNR from beacon frames
+            print "RRRRRRR"
             self.rx_frame += 1
 
             self.filter_src_addr(bytes, [], key) # to get self.saddr
             self.filter_dst_addr(bytes, [], key) # to get self.daddr
+
             self.filter_snr(bytes, key) # to get SNR and register hosts
+
 
         elif self.filter_data(bytes, key):
             self.tx_frame += 1        
             if self.fil[SRC]: # When packets are sent by this node (either adhoc int. or monitor int.)
                 if not self.filter_src_addr(bytes, self.my_addr, key):
+                    print "XXXXXXX"
                     return 0
                 
             if not self.filter_dst_addr(bytes, self.daddr, key):
                 pass # Do nothing
 
             if self.filter_bitrate(bytes, key):
+                print "YYYYYYYY"
                 self.filter_retry_count(bytes, key) # in retry_count add lq.all++ (and lq.retry++ in case)
+                return 1
+
+
+        else:
+            print "ZZZZZZZZ"
+            return 0
 
 ##
 # Callable Function
