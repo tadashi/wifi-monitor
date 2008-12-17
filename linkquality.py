@@ -5,7 +5,7 @@ import re
 import string
 
 from average import WeightedAverage
-
+from netperf import Netperf
 
 class LinkQuality(object):
     def __init__(self, addr, min, channel):
@@ -21,7 +21,7 @@ class LinkQuality(object):
         self.retry = 0
         self.all = 0
         self.rate = {}
-        self.rtetx = {}
+        self.rtetx = []
         self.rtetx2 = []
 
     def __repr__(self):
@@ -71,7 +71,7 @@ class LinkQuality(object):
             tx_loss = float(self.retry) / float(self.all)
             tmp_rtetx = 1.0 / ( 1.0 - tx_loss )
 
-            self.rtetx[timestamp] = [ tmp_rtetx, rtt ]
+            self.rtetx.append([timestamp, tmp_rtetx, rtt])
             self.lq = tmp_rtetx
 
             self.rtetx2.append([timestamp, tmp_rtetx, emasnr])
@@ -82,10 +82,13 @@ class LinkQuality(object):
             return 1.0
 
 
-    def refresh(self, emasnr, timestamp, rtt):
+    def refresh(self, emasnr, timestamp):
         #print "rtt", rtt
         if self.all > 200: # Data frames = same as ff.tx_frame
-            print "rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(emasnr, timestamp, rtt), rtt)
+            print "TESTTESTTESTTEST"
+            nf = Netperf("192.168.100.3")
+            tmp_rtt = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 3 -q %s' % "192.168.100.3", "192.168.100.3")
+            print "rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(emasnr, timestamp, tmp_rtt), tmp_rtt)
             self.all = 0
             self.retry = 0
 

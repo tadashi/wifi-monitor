@@ -9,7 +9,6 @@ import struct
 import getopt
 
 from linkquality import LinkQuality
-from netperf import Netperf
 
 ## Necesarry Filters
 SNR = 0
@@ -290,10 +289,6 @@ class FrameFilter(object):
                     try:
                         print "      EMA SNR[%s]  : %f" % (daddr, self.addr_lq[daddr].snr.emavalue(0.8))
                         print "      rt count[%s]  : %i" % (daddr, self.addr_lq[daddr].retry)
-                        #nf = Netperf(self.cf.ip_daddr)
-                        #tmp_ping_quality = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 10 -q %s' % (self.cf.ip_daddr), self.cf.ip_daddr)
-                        #tmp_ping_quality = 0.0
-                        #self.addr_lq[daddr].refresh(self.timestamp, tmp_ping_quality) # print rtETX
 
                     except KeyError:
                         print "[%s] is currently not registed yet." % daddr
@@ -312,8 +307,7 @@ class FrameFilter(object):
 
         ## for experimentation 200812111900
         for daddr in self.addr_lq:
-            tmp_ping_quality = 0.0
-            self.addr_lq[daddr].refresh(self.addr_lq[daddr].snr.emavalue(0.8), self.timestamp, tmp_ping_quality) # print rtETX
+            self.addr_lq[daddr].refresh(self.addr_lq[daddr].snr.emavalue(0.8), self.timestamp) # print rtETX
 
 ##
 # Main Functions: RX filter & TX filter
