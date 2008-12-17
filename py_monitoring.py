@@ -54,8 +54,7 @@ def write_to_file(ff, ct):
 
    writecsv.writerow(["HO counts", ct])
    for daddr in ff.addr_lq:
-      writecsv.writerow(["ROBOHOC [%s], timestamp, rtETX, EMA SNR or rtt" % daddr, ''])
-      #writecsv.writerows(ff.addr_lq[daddr].rtetx2)
+      writecsv.writerow(["ROBOHOC [%s], rtETX, EMA SNR" % daddr, ''])
       writecsv.writerows(ff.addr_lq[daddr].rtetx)
 
 def set_interface(iface, cf):
