@@ -136,13 +136,14 @@ if __name__=='__main__':
 
              #Initialization
              try:
-                current_lq = ff.addr_lq[cf.ether_aaddr].lq # rtetx of transmitting iface
+                current_lq = ff.addr_lq[cf.ether_daddr].lq # rtetx of transmitting iface
              except KeyError:
                 current_lq = 10.0
                 print "No Link Quality of [%s] is acquired" % cf.ether_daddr
 
              ff.rx_frame = 0 # RX frame count set 0 for next channel
              ff.tx_frame = 0 # TX frame count set 0 for next channel
+
              cf.next() # Configuration for next channel
              set_interface(backup, cf) # Setup interface for next channel
 
@@ -212,6 +213,6 @@ if __name__=='__main__':
        print "%f [second] left for end..." % ( runtime - (time.time() - exp_start ))
 
        for daddr in ff.addr_lq:
-          print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx)
+          print "Robohoc [%s] %s" % (daddr, ff.addr_lq[daddr].rtetx2)
           
           
