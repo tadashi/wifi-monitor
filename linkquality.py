@@ -71,7 +71,7 @@ class LinkQuality(object):
             tx_loss = float(self.retry) / float(self.all)
             tmp_rtetx = 1.0 / ( 1.0 - tx_loss )
 
-            self.rtetx.append([timestamp, tmp_rtetx, rtt])
+            self.rtetx.append([timestamp, tmp_rtetx, rtt]) # not used since 20081228 -> rtt_measurement.py added
             self.lq = tmp_rtetx
 
             self.rtetx2.append([timestamp, tmp_rtetx, emasnr])
@@ -84,10 +84,11 @@ class LinkQuality(object):
 
     def refresh(self, emasnr, timestamp):
         #print "rtt", rtt
-        if self.all > 200: # Data frames = same as ff.tx_frame
-            print "TESTTESTTESTTEST"
-            nf = Netperf("192.168.100.3")
-            tmp_rtt = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 3 -q %s' % "192.168.100.3", "192.168.100.3")
+        if self.all > 100: # Data frames = same as ff.tx_frame
+            #print "TESTTESTTESTTEST"
+            #nf = Netperf("192.168.100.3")
+            #tmp_rtt = nf.ping('ping -s 1024 -i 0.01 -W 1 -c 3 -q %s' % "192.168.100.3", "192.168.100.3")
+            tmp_rtt = 0.0
             print "rtETX [%s]  : %.2f, rtt : %.2f" % (self.addr, self.calculate(emasnr, timestamp, tmp_rtt), tmp_rtt)
             self.all = 0
             self.retry = 0

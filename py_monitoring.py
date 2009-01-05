@@ -15,7 +15,7 @@ from framefilter import FrameFilter
 from config import Configure
 from netperf import Netperf
 
-runtime = 600
+runtime = 300
 ho_count = 0
 snr_threshold = 0 # default
 
@@ -55,7 +55,8 @@ def write_to_file(ff, ct):
    writecsv.writerow(["HO counts", ct])
    for daddr in ff.addr_lq:
       writecsv.writerow(["ROBOHOC [%s], rtETX, EMA SNR" % daddr, ''])
-      writecsv.writerows(ff.addr_lq[daddr].rtetx)
+      #writecsv.writerows(ff.addr_lq[daddr].rtetx) # not used since 20081228 -> rtt_measurement.py added
+      writecsv.writerows(ff.addr_lq[daddr].rtetx2)
 
 def set_interface(iface, cf):
    if cf.ip_aaddr != cf.ip_saddr:
@@ -97,7 +98,7 @@ if __name__=='__main__':
 
     try:
        while 1:
-          while ff.rx_frame < 101: # Approx. 100ms * 100 = 10s ; Only beacon frames counted
+          while ff.rx_frame < 10: # Approx. 100ms * 100 = 10s ; Only beacon frames counted
              apply(ff.filter, p.next())
              #ff.print_rx_filter(backup_iface_monitor)
              ff.print_tx_filter(working_iface_adhoc) # maybe 1s

@@ -26,7 +26,7 @@ class Netperf(object):
             return 0
 
 
-    def ping(self, cmd, daddr):
+    def ping(self, cmd, daddr, timeout):
         skipped = True # skipped
 
         po = os.popen(cmd) # 1s
@@ -34,7 +34,7 @@ class Netperf(object):
 
         if not line:
             print "in ping_test(%s): ping_test timeout." % daddr 
-            return 0
+            return 100
 
         while line:
             line = line.strip()
@@ -54,7 +54,7 @@ class Netperf(object):
 
         if m1 == None:
             print "in ping_test(%s): ping_test failed." % daddr 
-            return 0
+            return timeout
 
         received = float(m1.group(1))
         dropped = float(m1.group(2))

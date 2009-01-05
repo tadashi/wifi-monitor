@@ -276,7 +276,7 @@ class FrameFilter(object):
         #print self.rate
         #print self.tx_frame
 
-        if not (self.frame % 1000):
+        if not (self.frame % 100):
             #print_stime = time.time()
             #print "print_tx_filter: loop starts %f" % print_stime
             #print "%s: monitoring Data frames [%u]" % (int, self.tx_frame)
