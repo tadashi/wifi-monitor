@@ -11,6 +11,8 @@ import socket
 import struct
 import getopt
 
+from pexpect import *
+
 from framefilter import FrameFilter
 from config import Configure
 from netperf import Netperf
@@ -79,17 +81,23 @@ def set_switch_and_gw(switch, gw):
   print "SET SWITCH AND GW"
 
 def set_interface(iface, cf):
-   cmd = "iwconfig ath%d channel %d && ifconfig ath%d %s netmask 255.255.255.0" % (iface, cf.channel, iface, cf.ip_aaddr)
-   #cmd = "iwconfig %s channel %i" % (iface, cf.channel)
-   os.system(cmd)
-   print "----> DONE \" %s \"" % cmd
+   print "cf.ip_aaddr: %s, cf.ip_saddr: %s" % (cf.ip_aaddr, cf.ip_saddr)
+   if cf.ip_aaddr == cf.ip_saddr:
+      cmd = "iwconfig ath%s channel %i" % (iface, cf.channel)
+      os.system(cmd)
+      print "----> DONE \" %s \"" % cmd
+
+   else:
+      cmd = "iwconfig ath%d channel %d && ifconfig ath%d %s netmask 255.255.255.0" % (iface, cf.channel, iface, cf.ip_saddr)
+      os.system(cmd)
+      print "----> DONE \" %s \"" % cmd
 
 if __name__=='__main__':
    
     exp_start = time.time()
 
     if len(sys.argv) < 2:
-       print 'usage: sudo py_monitoring.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
+       print 'usage: sudo tract.py -t <transmit_interface> -m <monitor_interface> -x <snr_threshold> [ -s -1 -d -1 ]'
        sys.exit(0)
 
     try:
@@ -111,6 +119,7 @@ if __name__=='__main__':
              sys.exit(0)
        
           print "Current Interfaces: [wa: %s] [wm: %s] [ba: %s] [bm: %s]" % (working_iface_adhoc, working_iface_monitor, backup_iface_adhoc, backup_iface_monitor)
+          print "Current Interface: [wa: ath%s] [ba: ath%s]" % (working, backup)
           
           cf = Configure(working_iface_adhoc, backup_iface_adhoc)
           ff = FrameFilter(cf, snr_threshold, FILTER)
@@ -127,7 +136,7 @@ if __name__=='__main__':
 
              #Initialization
              try:
-                current_lq = ff.addr_lq[cf.ether_daddr].lq # rtetx of scanned neighbor host
+                current_lq = ff.addr_lq[cf.ether_aaddr].lq # rtetx of transmitting iface
              except KeyError:
                 current_lq = 10.0
                 print "No Link Quality of [%s] is acquired" % cf.ether_daddr
@@ -150,20 +159,27 @@ if __name__=='__main__':
              try:
                 lq_link1 = ff.addr_lq['00:80:92:3e:18:11'].lq # link1 = robohoc46
                 lq_link2 = ff.addr_lq['00:80:92:3d:45:df'].lq # link2 = robohoc56
-                print "link1 ['00:80:92:3e:18:11'] %f, link2 ['00:80:92:3d:45:df'] %f" % (lq_link1, lq_link2)
+                if cf.ether_daddr == '00:80:92:3e:18:11':
+                   tmp_lq = lq_link1
+                elif cf.ether_daddr == '00:80:92:3d:45:df':
+                   tmp_lq = lq_link2
+                else:
+                   sys.exit(1)
 
-                if lq_link2 + 0.1 < lq_link1: # previous rtetx of counterpart
+                print "current_lq: %f, tmp_lq['%s']: %f" % (current_lq, cf.ether_daddr, tmp_lq)
+
+                if tmp_lq + 0.1 < current_lq: # 0.1 should be changed
                    ho_count += 1
                    tmp = adhoc_interface
                    adhoc_interface = monitor_interface
                    monitor_interface = tmp
 
                    # L2VPN switching
-                   set_interface(backup, cf)
-                   set_switch_and_gw(backup, cf.ip_maddr)
+                   #set_interface(backup, cf)
+                   set_switch_and_gw(backup, cf.ip_daddr)
 
                    print "HANDOVER WAS CONDUCTED"
-                   p.close()
+                   #p.close()
 
                    break
 
