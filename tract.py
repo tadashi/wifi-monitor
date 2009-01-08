@@ -129,10 +129,17 @@ if __name__=='__main__':
           while 1:
              while ff.rx_frame < 101: # Approx. 100ms * 100 = 10s ; Only beacon frames counted
                 apply(ff.filter, p.next())
-                ff.print_tx_filter(working_iface_adhoc) # maybe 1s
+                #ff.print_tx_filter(working_iface_adhoc) # maybe 1s
 
              stime = time.time()
-             print "loop starts %f" % stime
+             #print "loop starts %f" % stime
+
+             try:
+                for daddr in ['00:80:92:3e:18:11', '00:80:92:3e:18:18']:
+                   print "XXXXXXXXXXXXXXXX"
+                   ff.addr_lq[daddr].refresh(ff.addr_lq[daddr].snr.emavalue(0.8), ff.timestamp) # calc rtETX
+             except KeyError:
+                print "No Beacon Frame of [%s] is acquired" % daddr
 
              #Initialization
              try:
@@ -148,6 +155,7 @@ if __name__=='__main__':
              set_interface(backup, cf) # Setup interface for next channel
 
              #Algorithm 2
+             print "cf.ether_daddr: %s" % cf.ether_daddr
              if ff.is_higher(cf.ether_daddr):
                 print "Netperf Starts "
                 nf = Netperf(cf.ip_daddr)
