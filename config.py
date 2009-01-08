@@ -80,6 +80,9 @@ Robohoc4_ath1 = AP(40, '192.168.4.6', '192.168.4.4', '192.168.100.4', '00:80:92:
 Robohoc5_ath0 = AP(60, '192.168.6.6', '192.168.6.5', '192.168.100.5', '00:80:92:3d:45:df') # for Robohoc6
 Robohoc5_ath1 = AP(11, '192.168.5.3', '192.168.5.5', '192.168.100.5', '00:80:92:3e:18:16') # for Robohoc3
 
+ROBOHOC3 = ['00:80:92:3a:9c:d0', '00:80:92:3a:9c:c6']
+ROBOHOC6 = ['00:80:92:3a:9a:e8', '00:80:92:3e:18:18']
+
 class Configure(object):
     def __init__(self, aiface, miface):
         super(Configure, self).__init__()
@@ -121,13 +124,13 @@ class Configure(object):
         return channel
 
     def get_addr(self, channel):
-        if self.ether_aaddr in ['00:80:92:3a:9c:c5', '00:80:92:3a:9c:ce']: # Robohoc6
+        if self.ether_aaddr in ROBOHOC6: # Robohoc6
             if channel == Robohoc4_ath1.ch:
                 return Robohoc4_ath1.sip, Robohoc4_ath1.dip, Robohoc4_ath1.dether
             elif channel == Robohoc5_ath0.ch:
                 return Robohoc5_ath0.sip, Robohoc5_ath0.dip, Robohoc5_ath0.dether
 
-        elif self.ether_aaddr in  ['00:80:92:3a:9c:d0', '00:80:92:3a:9c:c6']: # Robohoc3
+        elif self.ether_aaddr in  ROBOHOC3: # Robohoc3
             if channel == Robohoc4_ath0.ch:
                 return Robohoc4_ath0.sip, Robohoc4_ath0.dip, Robohoc4_ath0.dether
             elif channel == Robohoc5_ath1.ch:
@@ -137,7 +140,7 @@ class Configure(object):
             print "WARNING: [%s] No suc Robohoc registered" % self.ether_aaddr
 
     def next(self):
-        if self.ether_aaddr in ['00:80:92:3a:9c:c5', '00:80:92:3a:9c:ce']: # Robohoc6
+        if self.ether_aaddr in ROBOHOC6: # Robohoc6
             print "This is Robohoc6"
             if self.channel == Robohoc4_ath1.ch:
                 self.channel = Robohoc5_ath0.ch
@@ -153,7 +156,7 @@ class Configure(object):
                 self.ether_daddr = Robohoc4_ath1.dether
                 self.vip_daddr = Robohoc4_ath1.dcip
 
-        elif self.ether_aaddr in ['00:80:92:3a:9c:d0', '00:80:92:3a:9c:c6']: # Robohoc3
+        elif self.ether_aaddr in ROBOHOC3: # Robohoc3
             print "This is Robohoc3"
             if self.channel == Robohoc5_ath1.ch:
                 self.channel = Robohoc4_ath0.ch
