@@ -159,10 +159,10 @@ if __name__=='__main__':
 
              try:
                 lq_link1 = ff.addr_lq['00:80:92:3e:18:11'].lq # link1 = robohoc46
-                lq_link2 = ff.addr_lq['00:80:92:3d:45:df'].lq # link2 = robohoc56
+                lq_link2 = ff.addr_lq['00:80:92:3e:18:18'].lq # link2 = robohoc56
                 if cf.ether_daddr == '00:80:92:3e:18:11':
                    tmp_lq = lq_link1
-                elif cf.ether_daddr == '00:80:92:3d:45:df':
+                elif cf.ether_daddr == '00:80:92:3e:18:18':
                    tmp_lq = lq_link2
                 else:
                    sys.exit(1)
