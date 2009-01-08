@@ -1,8 +1,8 @@
 #!/bin/sh
 
-date 122900002008
+date 010800002009
 
-for a in 10 30 50
+for a in 30
 do
         echo "python rtt_measurement.py > /dev/null &"
 	python rtt_measurement.py > /dev/null &

@@ -54,7 +54,7 @@ if __name__=='__main__':
     #    timestamp = time.time()
     #    rtt = Netperf.ping('ping -s 1024 -W 1 -c 1 -q %s' % "192.168.100.3", "192.168.100.3")
 
-    myping = Netperf("203.178.135.16")
+    myping = Netperf("192.168.100.3")
     myrtt = RTT()
 
     exp_start = time.time()
@@ -62,7 +62,7 @@ if __name__=='__main__':
     try:
         while (time.time() - exp_start) < 300:
             timestamp = time.time()
-            rtt = myping.ping('ping -s 1024 -W 1 -c 2 -q %s' % "203.178.135.16", "203.178.135.16", 1) # timeout = -W * -c
+            rtt = myping.ping('ping -s 1024 -W 1 -c 2 -q %s' % "192.168.100.3", "192.168.100.3", 1) # timeout = -W * -c
 
             myrtt.recode(timestamp, rtt)
 
